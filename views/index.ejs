@@ -33,6 +33,7 @@
             }
         }
     </script>
+    
     <style>
         body {
             background-color: #050505;
@@ -52,14 +53,8 @@
             transition: all 0.2s ease-in-out;
         }
 
-        .pro-card:hover {
-            border-color: #3B82F6;
-        }
-
-        .active-module {
-            border-color: #3B82F6;
-            background: rgba(59, 130, 246, 0.05);
-        }
+        .pro-card:hover { border-color: #3B82F6; }
+        .active-module { border-color: #3B82F6; background: rgba(59, 130, 246, 0.05); }
 
         [x-cloak] { display: none !important; }
         ::-webkit-scrollbar { width: 6px; }
@@ -67,104 +62,108 @@
         ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
     </style>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('ravenApp', () => ({
+                view: (<%- JSON.stringify(typeof orderId !== 'undefined' ? orderId : '') %> && <%- JSON.stringify(typeof status !== 'undefined' ? status : 'PENDING') %> === 'PENDING') ? 'checkout' : 'home',
+                pricing: <%- JSON.stringify(typeof pricing !== 'undefined' ? pricing : {}) %>,
+                contacts: <%- JSON.stringify(typeof contacts !== 'undefined' ? contacts : []) %>,
+                selectedBot: 'store', 
+                orderType: 'baru',
+                selectedPackage: 'paket2',
+                orderId: <%- JSON.stringify(typeof orderId !== 'undefined' ? orderId : '') %>,
+                qrisData: <%- JSON.stringify(typeof qris !== 'undefined' ? qris : '') %>,
+                harga: <%= typeof harga !== 'undefined' && harga ? harga : 0 %>,
+                status: <%- JSON.stringify(typeof status !== 'undefined' ? status : 'PENDING') %>,
+                timeLeft: 300,
+                isLoading: false,
+
+                init() {
+                    if (this.view === 'checkout') {
+                        this.startTimers();
+                    }
+                },
+
+                async submitForm(e) {
+                    this.isLoading = true;
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData.entries());
+                    
+                    try {
+                        const res = await fetch('/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await res.json();
+                        
+                        if (result.success) {
+                            this.orderId = result.orderId;
+                            this.qrisData = result.qris;
+                            this.harga = result.harga;
+                            this.status = result.status || 'PENDING';
+                            this.timeLeft = 300;
+                            history.pushState(null, '', '/?checkout=' + this.orderId);
+                            this.view = 'checkout';
+                            this.startTimers();
+                            setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100);
+                        } else {
+                            alert(result.message);
+                        }
+                    } catch(err) {
+                        alert('Gagal menghubungi server. Coba beberapa saat lagi.');
+                    }
+                    this.isLoading = false;
+                },
+
+                startTimers() {
+                    const timer = setInterval(() => { 
+                        if(this.timeLeft > 0 && this.status === 'PENDING') {
+                            this.timeLeft--;
+                        } else {
+                            clearInterval(timer);
+                            if(this.timeLeft === 0 && this.status === 'PENDING') this.status = 'EXPIRED';
+                        }
+                    }, 1000);
+
+                    const poll = setInterval(async () => {
+                        if(['COMPLETED', 'SUCCESS', 'EXPIRED', 'CANCELLED', 'ERROR'].includes(this.status)) {
+                            clearInterval(poll);
+                            return;
+                        }
+                        try {
+                            const res = await fetch('/status/' + this.orderId);
+                            const data = await res.json();
+                            this.status = data.status || this.status;
+                        } catch(e) {}
+                    }, 5000);
+                },
+
+                async cancelOrder() {
+                    if(!confirm('Yakin ingin membatalkan pesanan ini?')) return;
+                    this.isLoading = true;
+                    try {
+                        const res = await fetch('/cancel/' + this.orderId, { method: 'POST' });
+                        const result = await res.json();
+                        if(result.success) this.status = 'CANCELLED';
+                    } catch(err) {
+                        alert('Gagal membatalkan pesanan.');
+                    }
+                    this.isLoading = false;
+                },
+
+                formatTime() {
+                    let m = Math.floor(this.timeLeft / 60);
+                    let s = this.timeLeft % 60;
+                    return `${m}:${s < 10 ? '0' : ''}${s}`;
+                }
+            }));
+        });
+    </script>
 </head>
 
-<body class="antialiased flex flex-col min-h-screen" x-data="{ 
-    view: ('<%= orderId %>' && '<%= status %>' === 'PENDING') ? 'checkout' : 'home',
-    pricing: <%- JSON.stringify(pricing) %>,
-    contacts: <%- JSON.stringify(contacts) %>,
-    selectedBot: 'store', 
-    orderType: 'baru',
-    selectedPackage: 'paket2',
-    orderId: '<%= orderId || '' %>',
-    qrisData: '<%= qris || '' %>',
-    harga: <%= harga || 0 %>,
-    status: '<%= typeof status !== 'undefined' ? status : 'PENDING' %>',
-    timeLeft: 300,
-    isLoading: false,
-
-    init() {
-        if (this.view === 'checkout') {
-            this.startTimers();
-        }
-    },
-
-    async submitForm(e) {
-        this.isLoading = true;
-        const formData = new FormData(e.target);
-        const data = Object.fromEntries(formData.entries());
-        
-        try {
-            const res = await fetch('/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            
-            if (result.success) {
-                this.orderId = result.orderId;
-                this.qrisData = result.qris;
-                this.harga = result.harga;
-                this.status = result.status || 'PENDING';
-                this.timeLeft = 300;
-                history.pushState(null, '', '/?checkout=' + this.orderId);
-                this.view = 'checkout';
-                this.startTimers();
-                setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                }, 100);
-            } else {
-                alert(result.message);
-            }
-        } catch(err) {
-            alert('Gagal menghubungi server. Coba beberapa saat lagi.');
-        }
-        this.isLoading = false;
-    },
-
-    startTimers() {
-        const timer = setInterval(() => { 
-            if(this.timeLeft > 0 && this.status === 'PENDING') {
-                this.timeLeft--;
-            } else {
-                clearInterval(timer);
-                if(this.timeLeft === 0 && this.status === 'PENDING') this.status = 'EXPIRED';
-            }
-        }, 1000);
-
-        const poll = setInterval(async () => {
-            if(['COMPLETED', 'SUCCESS', 'EXPIRED', 'CANCELLED', 'ERROR'].includes(this.status)) {
-                clearInterval(poll);
-                return;
-            }
-            try {
-                const res = await fetch('/status/' + this.orderId);
-                const data = await res.json();
-                this.status = data.status || this.status;
-            } catch(e) {}
-        }, 5000);
-    },
-
-    async cancelOrder() {
-        if(!confirm('Yakin ingin membatalkan pesanan ini?')) return;
-        this.isLoading = true;
-        try {
-            const res = await fetch('/cancel/' + this.orderId, { method: 'POST' });
-            const result = await res.json();
-            if(result.success) this.status = 'CANCELLED';
-        } catch(err) {
-            alert('Gagal membatalkan pesanan.');
-        }
-        this.isLoading = false;
-    },
-
-    formatTime() {
-        let m = Math.floor(this.timeLeft / 60);
-        let s = this.timeLeft % 60;
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
-    }
-}">
+<body class="antialiased flex flex-col min-h-screen" x-data="ravenApp">
 
     <div class="fixed inset-0 grid-lines z-0 opacity-30"></div>
 
@@ -192,6 +191,7 @@
     </nav>
 
     <div class="flex-grow">
+        
         <main x-show="view === 'home'" class="relative z-10 pt-32 pb-24 px-6 flex flex-col items-center justify-center min-h-[80vh] text-center" x-transition x-cloak>
             <div class="max-w-3xl mx-auto">
                 <div class="inline-block px-3 py-1 bg-accent/10 border border-accent/20 rounded-full mb-6">
@@ -214,6 +214,7 @@
                            class="w-12 h-12 rounded-full flex items-center justify-center transition-all relative group cursor-pointer border border-transparent hover:border-current">
                             
                             <svg x-show="contact.type === 'whatsapp'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path></svg>
+                            
                             <svg x-show="contact.type === 'telegram'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.686c.223-.195-.054-.31-.353-.111l-6.4 4.024-2.76-.86c-.6-.188-.614-.6.126-.89l10.814-4.17c.506-.182.947.114.753.86z"></path></svg>
                             
                             <span class="absolute -bottom-8 whitespace-nowrap text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" x-text="contact.name"></span>
@@ -323,8 +324,9 @@
         <main x-show="view === 'checkout'" class="relative z-10 pt-24 pb-24 px-6" x-transition x-cloak>
             <div class="max-w-lg mx-auto">
                 <div class="pro-card rounded-3xl p-8 md:p-10 text-center relative overflow-hidden">
+                    
                     <div class="absolute top-0 left-0 w-full h-1 bg-surface">
-                        <div class="h-full bg-accent transition-all duration-1000" :style="`width: ${(timeLeft/300)*100}%` "></div>
+                        <div class="h-full bg-accent transition-all duration-1000" :style="'width: ' + ((timeLeft/300)*100) + '%'"></div>
                     </div>
 
                     <div class="mb-8">
@@ -407,13 +409,13 @@
                         </div>
                     </div>
 
-                    <button @click="cancelOrder" class="text-sm font-medium text-gray-500 hover:text-danger transition-colors underline underline-offset-4">Batalkan Transanan</button>
+                    <button @click="cancelOrder" class="text-sm font-medium text-gray-500 hover:text-danger transition-colors underline underline-offset-4">Batalkan Transaksi</button>
 
                     <div class="mt-8 pt-6 border-t border-border flex flex-col items-center justify-center gap-3">
                         <span class="text-xs text-gray-500 font-medium">Pembayaran didukung oleh:</span>
                         <div class="flex items-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6">
-                            <span class="text-sm font-bold">Pakasir</span>
+                            <span class="text-sm font-bold text-white">Pakasir</span>
                         </div>
                     </div>
                 </div>
