@@ -1,0 +1,35 @@
+global.debug = true; 
+module.exports = {
+    PAKASIR_KEY: 'egY52Qm9D3WdeFpXoB9nipg5zFfhqDMC',
+    PAKASIR_SLUG: 'ravenzena-auto-order',
+    GITHUB_TOKEN: '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',
+    GITHUB_OWNER: 'alxzy-group',
+    GITHUB_REPO: 'alxzydb',
+    FILE_PATH: 'orders.json',
+    CONTACT_OWNER: [
+        { type: 'whatsapp', id: '6281234567890', name: 'Admin 1' },
+        { type: 'whatsapp', id: '6289876543210', name: 'Admin 2' },
+        { type: 'telegram', id: 'ravenzena', name: 'Owner' },
+        { type: 'telegram', id: 'ravenbots_cs', name: 'CS Support' }
+    ],
+    PRICING: {
+        store: {
+            'paket1': { nama: '1 Minggu', harga: 5000, hari: 7 },
+            'paket2': { nama: '1 Bulan', harga: 15000, hari: 30 },
+            'paket3': { nama: '2 Bulan', harga: 25000, hari: 60 },
+            'paket4': { nama: 'Permanen', harga: 100000, hari: 'PERMANENT' }
+        },
+        guild: {
+            'paket1': { nama: '1 Minggu', harga: 10000, hari: 7 },
+            'paket2': { nama: '1 Bulan', harga: 25000, hari: 30 },
+            'paket3': { nama: '2 Bulan', harga: 40000, hari: 60 },
+            'paket4': { nama: 'Permanen', harga: 150000, hari: 'PERMANENT' }
+        },
+        cc: {
+            'paket1': { nama: '1 Minggu', harga: 15000, hari: 7 },
+            'paket2': { nama: '1 Bulan', harga: 40000, hari: 30 },
+            'paket3': { nama: '2 Bulan', harga: 70000, hari: 60 },
+            'paket4': { nama: 'Permanen', harga: 250000, hari: 'PERMANENT' }
+        }
+    }
+};
