@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RavenBots | Enterprise Automation Framework</title>
+    <title>RavenBots | Layanan Bot WhatsApp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -22,23 +22,12 @@
                     },
                     colors: {
                         base: '#050505',
-                        surface: '#0A0A0A',
-                        card: '#0D0D0D',
-                        border: '#1A1A1A',
+                        surface: '#111111',
+                        border: '#262626',
                         accent: '#3B82F6',
                         success: '#10B981',
                         warning: '#F59E0B',
                         danger: '#EF4444'
-                    },
-                    animation: {
-                        'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'shimmer': 'shimmer 2s linear infinite',
-                    },
-                    keyframes: {
-                        shimmer: {
-                            '0%': { backgroundPosition: '-200% 0' },
-                            '100%': { backgroundPosition: '200% 0' }
-                        }
                     }
                 }
             }
@@ -52,16 +41,15 @@
         }
 
         .grid-lines {
-            background-image: linear-gradient(to right, #0F0F0F 1px, transparent 1px),
-                linear-gradient(to bottom, #0F0F0F 1px, transparent 1px);
-            background-size: 50px 50px;
+            background-image: linear-gradient(to right, #111111 1px, transparent 1px),
+                linear-gradient(to bottom, #111111 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
         .pro-card {
             background: #0A0A0A;
-            border: 1px solid #1A1A1A;
-            box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.5);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #262626;
+            transition: all 0.2s ease-in-out;
         }
 
         .pro-card:hover {
@@ -70,39 +58,14 @@
 
         .active-module {
             border-color: #3B82F6;
-            background: rgba(59, 130, 246, 0.02);
+            background: rgba(59, 130, 246, 0.05);
         }
 
-        .input-glow:focus {
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.5);
-            outline: none;
-        }
-
-        .qris-glow {
-            box-shadow: 0 0 40px -10px rgba(59, 130, 246, 0.3);
-        }
-
-        [x-cloak] {
-            display: none !important;
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #050505;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #1A1A1A;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #3B82F6;
-        }
+        [x-cloak] { display: none !important; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
     </style>
 </head>
 
@@ -155,7 +118,7 @@
                 alert(result.message);
             }
         } catch(err) {
-            alert('Gagal menghubungi server endpoint');
+            alert('Gagal menghubungi server. Coba beberapa saat lagi.');
         }
         this.isLoading = false;
     },
@@ -184,14 +147,14 @@
     },
 
     async cancelOrder() {
-        if(!confirm('Konfirmasi pembatalan transaksi?')) return;
+        if(!confirm('Yakin ingin membatalkan pesanan ini?')) return;
         this.isLoading = true;
         try {
             const res = await fetch('/cancel/' + this.orderId, { method: 'POST' });
             const result = await res.json();
             if(result.success) this.status = 'CANCELLED';
         } catch(err) {
-            alert('Proses pembatalan gagal');
+            alert('Gagal membatalkan pesanan.');
         }
         this.isLoading = false;
     },
@@ -203,152 +166,151 @@
     }
 }">
 
-    <div class="fixed inset-0 grid-lines z-0 opacity-40"></div>
+    <div class="fixed inset-0 grid-lines z-0 opacity-30"></div>
 
-    <nav class="fixed top-0 w-full z-50 border-b border-border bg-base/80 backdrop-blur-xl">
+    <nav class="fixed top-0 w-full z-50 border-b border-border bg-base/80 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div @click="view = 'home'; history.pushState(null, '', '/')" class="flex items-center gap-3 cursor-pointer">
-                <div class="w-8 h-8 bg-accent rounded flex items-center justify-center shadow-lg shadow-accent/20">
+                <div class="w-8 h-8 bg-accent rounded flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
-                <span class="font-mono font-bold text-xl tracking-tighter text-white">RAVEN<span class="text-accent">BOTS</span></span>
+                <span class="font-bold text-lg text-white">Raven<span class="text-accent">Bots</span></span>
             </div>
 
-            <div class="hidden md:flex items-center gap-10">
-                <div class="flex items-center gap-8 text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-                    <a href="#" class="hover:text-white transition-colors">Infrastructure</a>
-                    <a href="#" class="hover:text-white transition-colors">Documentation</a>
-                    <a href="#" class="hover:text-white transition-colors">Security</a>
+            <div class="hidden md:flex items-center gap-8">
+                <div class="flex items-center gap-6 text-sm font-medium text-gray-400">
+                    <a href="#" class="hover:text-white transition-colors">Fitur</a>
+                    <a href="#" class="hover:text-white transition-colors">Harga</a>
+                    <a href="#" class="hover:text-white transition-colors">Panduan</a>
                 </div>
-                <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="bg-white text-black px-5 py-2 rounded font-bold text-[10px] uppercase tracking-widest hover:bg-accent hover:text-white transition-all">Pesan Sekarang</button>
-                <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="bg-white text-black px-5 py-2 rounded font-bold text-[10px] uppercase tracking-widest hover:bg-accent hover:text-white transition-all">Kembali</button>
+                <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="bg-white text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-all">Pesan Sekarang</button>
+                <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="bg-surface border border-border text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all">Kembali</button>
             </div>
         </div>
     </nav>
 
     <div class="flex-grow">
-        <main x-show="view === 'home'" class="relative z-10 pt-40 pb-32 px-6 flex flex-col items-center justify-center min-h-[80vh] text-center" x-transition x-cloak>
-            <div class="max-w-4xl mx-auto">
-                <div class="inline-block px-3 py-1 bg-accent/10 border border-accent/20 rounded mb-6">
-                    <span class="text-[10px] font-bold text-accent uppercase tracking-widest italic">Engine Version 4.0.2-Stable</span>
+        <main x-show="view === 'home'" class="relative z-10 pt-32 pb-24 px-6 flex flex-col items-center justify-center min-h-[80vh] text-center" x-transition x-cloak>
+            <div class="max-w-3xl mx-auto">
+                <div class="inline-block px-3 py-1 bg-accent/10 border border-accent/20 rounded-full mb-6">
+                    <span class="text-xs font-medium text-accent">Pembaruan v4.0 sudah rilis 🎉</span>
                 </div>
                 
-                <h1 class="text-6xl md:text-8xl font-extrabold text-white tracking-tighter mb-8 leading-none">Automasi Grup <br /> <span class="text-gray-600">Tanpa Batas.</span></h1>
+                <h1 class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                    Otomatisasi Grup Kamu <br /> 
+                    <span class="text-gray-400">Tanpa Ribet.</span>
+                </h1>
                 
-                <p class="text-gray-500 max-w-2xl mx-auto text-lg font-medium leading-relaxed mb-12">
-                    Deploy modul otomasi WhatsApp dengan standar industri. Konfigurasi mandiri, aktivasi instan, dan performa tanpa jeda.
+                <p class="text-gray-400 text-lg mb-10">
+                    Tingkatkan interaksi dan kelola grup komunitasmu dengan bot WhatsApp pintar. Mudah diatur, aktif 24/7, dan responsif.
                 </p>
                 
-                <div class="flex flex-wrap items-center justify-center gap-4 mb-12">
+                <div class="flex flex-wrap items-center justify-center gap-4 mb-10">
                     <template x-for="(contact, index) in contacts" :key="index">
                         <a :href="contact.type === 'whatsapp' ? 'https://wa.me/' + contact.id : 'https://t.me/' + contact.id" target="_blank"
-                           :class="contact.type === 'whatsapp' ? 'bg-success/10 text-success hover:bg-success hover:text-white shadow-success/20' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white shadow-blue-500/20'"
-                           class="w-14 h-14 rounded-full flex items-center justify-center transition-all shadow-lg relative group cursor-pointer">
+                           :class="contact.type === 'whatsapp' ? 'bg-success/10 text-success hover:bg-success hover:text-white' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'"
+                           class="w-12 h-12 rounded-full flex items-center justify-center transition-all relative group cursor-pointer border border-transparent hover:border-current">
                             
-                            <svg x-show="contact.type === 'whatsapp'" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path></svg>
+                            <svg x-show="contact.type === 'whatsapp'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path></svg>
+                            <svg x-show="contact.type === 'telegram'" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.686c.223-.195-.054-.31-.353-.111l-6.4 4.024-2.76-.86c-.6-.188-.614-.6.126-.89l10.814-4.17c.506-.182.947.114.753.86z"></path></svg>
                             
-                            <svg x-show="contact.type === 'telegram'" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.686c.223-.195-.054-.31-.353-.111l-6.4 4.024-2.76-.86c-.6-.188-.614-.6.126-.89l10.814-4.17c.506-.182.947.114.753.86z"></path></svg>
-                            
-                            <span class="absolute -bottom-8 whitespace-nowrap text-[9px] font-bold uppercase tracking-widest text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" x-text="contact.name"></span>
+                            <span class="absolute -bottom-8 whitespace-nowrap text-xs font-medium text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" x-text="contact.name"></span>
                         </a>
                     </template>
                 </div>
 
-                <button @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="inline-flex items-center justify-center gap-3 bg-white text-black px-10 py-5 rounded-2xl font-bold text-[11px] uppercase tracking-[0.2em] hover:bg-accent hover:text-white transition-all shadow-xl hover:shadow-accent/20">
-                    Console Access
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <button @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-bold hover:bg-gray-200 transition-all">
+                    Mulai Berlangganan
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
         </main>
 
-        <main x-show="view === 'order'" class="relative z-10 pt-40 pb-32 px-6" x-transition x-cloak>
-            <div class="max-w-6xl mx-auto">
-                <div class="mb-12 text-center md:text-left">
-                    <h1 class="text-4xl md:text-5xl font-extrabold text-white tracking-tighter mb-4">Deploy System</h1>
-                    <p class="text-gray-500 font-medium text-sm">Pilih modul intelijen dan sesuaikan identitas grup target.</p>
+        <main x-show="view === 'order'" class="relative z-10 pt-32 pb-24 px-6" x-transition x-cloak>
+            <div class="max-w-5xl mx-auto">
+                <div class="mb-10 text-center md:text-left">
+                    <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">Pilih Paket Bot</h1>
+                    <p class="text-gray-400">Pilih jenis layanan yang paling sesuai dengan kebutuhan grup komunitasmu.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <template x-for="(bot, index) in [
-                        {id: 'store', name: 'Bot Store', desc: 'Manajemen penyimpanan list data, katalog produk, dan auto-respon cerdas grup.', icon: 'M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z M9 12h6 M9 16h6'},
-                        {id: 'guild', name: 'Bot Guild', desc: 'Modul engagement komunitas: leveling system, mini-games, dan auto-absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
-                        {id: 'cc', name: 'Bot CC', desc: 'High-traffic processor untuk grup skala besar dengan kebutuhan API yang stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
+                        {id: 'store', name: 'Bot Store', desc: 'Cocok untuk jualan. Ada fitur simpan data, katalog produk, dan balasan otomatis.', icon: 'M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z M9 12h6 M9 16h6'},
+                        {id: 'guild', name: 'Bot Komunitas', desc: 'Bikin grup makin seru. Dilengkapi mini-games, sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
+                        {id: 'cc', name: 'Bot Premium', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
                     ]" :key="index">
-                        <div @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-10 rounded-2xl cursor-pointer"
+                        <div @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer"
                             :class="selectedBot === bot.id ? 'active-module' : ''">
-                            <div class="w-12 h-12 bg-white/5 border border-white/5 flex items-center justify-center rounded-lg mb-8 transition-colors"
-                                :class="selectedBot === bot.id ? 'bg-accent/10 border-accent/20 text-accent' : 'text-gray-600'">
+                            <div class="w-12 h-12 bg-surface border border-border flex items-center justify-center rounded-lg mb-5 transition-colors"
+                                :class="selectedBot === bot.id ? 'bg-accent/10 border-accent/30 text-accent' : 'text-gray-500'">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="bot.icon"></path>
                                 </svg>
                             </div>
-                            <h3 class="text-xl font-bold text-white mb-3" x-text="bot.name"></h3>
-                            <p class="text-xs text-gray-500 leading-relaxed font-medium" x-text="bot.desc"></p>
+                            <h3 class="text-lg font-semibold text-white mb-2" x-text="bot.name"></h3>
+                            <p class="text-sm text-gray-400 leading-relaxed" x-text="bot.desc"></p>
                         </div>
                     </template>
                 </div>
 
-                <div class="pro-card rounded-[2rem] overflow-hidden">
-                    <form @submit.prevent="submitForm" class="p-8 md:p-16">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-20">
-                            <div class="space-y-10">
+                <div class="pro-card rounded-2xl overflow-hidden">
+                    <form @submit.prevent="submitForm" class="p-6 md:p-10">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                            <div class="space-y-8">
                                 <div>
-                                    <h4 class="text-white font-bold text-xs uppercase tracking-[0.3em] mb-10 flex items-center gap-4">
-                                        <span class="w-8 h-8 rounded bg-accent/10 text-accent flex items-center justify-center font-mono">01</span>
-                                        Identity Setup
+                                    <h4 class="text-white font-semibold text-sm mb-6 flex items-center gap-3">
+                                        <span class="w-6 h-6 rounded bg-surface border border-border flex items-center justify-center text-xs">1</span>
+                                        Informasi Grup
                                     </h4>
-                                    <div class="space-y-8">
-                                        <div class="group">
-                                            <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3 ml-1">Administrative Email</label>
-                                            <input type="email" name="email" required placeholder="admin@domain.id" class="input-glow w-full bg-base border border-border rounded-xl px-6 py-4 text-sm text-white transition-all">
+                                    <div class="space-y-5">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Email Pengelola</label>
+                                            <input type="email" name="email" required placeholder="email@contoh.com" class="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all">
                                         </div>
-                                        <div class="group">
-                                            <label class="block text-[10px] font-bold text-gray-600 uppercase tracking-widest mb-3 ml-1">WA Access Link</label>
-                                            <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="input-glow w-full bg-base border border-border rounded-xl px-6 py-4 text-sm text-white transition-all">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-400 mb-2">Link Grup WhatsApp</label>
+                                            <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all">
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="space-y-10">
+                            <div class="space-y-8">
                                 <div>
-                                    <h4 class="text-white font-bold text-xs uppercase tracking-[0.3em] mb-10 flex items-center gap-4">
-                                        <span class="w-8 h-8 rounded bg-accent/10 text-accent flex items-center justify-center font-mono">02</span>
-                                        Subscription
+                                    <h4 class="text-white font-semibold text-sm mb-6 flex items-center gap-3">
+                                        <span class="w-6 h-6 rounded bg-surface border border-border flex items-center justify-center text-xs">2</span>
+                                        Detail Berlangganan
                                     </h4>
 
-                                    <div class="flex p-1.5 bg-base border border-border rounded-xl mb-8">
+                                    <div class="flex p-1 bg-surface border border-border rounded-lg mb-6">
                                         <label class="flex-1 cursor-pointer">
                                             <input type="radio" name="tipe_order" value="baru" x-model="orderType" class="sr-only">
-                                            <div :class="orderType === 'baru' ? 'bg-accent text-white' : 'text-gray-600'" class="py-3 text-center text-[10px] font-bold rounded-lg transition-all uppercase tracking-widest">Beli Baru</div>
+                                            <div :class="orderType === 'baru' ? 'bg-accent text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'" class="py-2 text-center text-sm font-medium rounded-md transition-all">Beli Baru</div>
                                         </label>
                                         <label class="flex-1 cursor-pointer">
                                             <input type="radio" name="tipe_order" value="perpanjang" x-model="orderType" class="sr-only">
-                                            <div :class="orderType === 'perpanjang' ? 'bg-accent text-white' : 'text-gray-600'" class="py-3 text-center text-[10px] font-bold rounded-lg transition-all uppercase tracking-widest">Perpanjang</div>
+                                            <div :class="orderType === 'perpanjang' ? 'bg-accent text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'" class="py-2 text-center text-sm font-medium rounded-md transition-all">Perpanjang</div>
                                         </label>
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-4 mb-10">
+                                    <div class="grid grid-cols-2 gap-3 mb-8">
                                         <template x-for="(pkg, key) in pricing[selectedBot]" :key="key">
                                             <label class="cursor-pointer">
                                                 <input type="radio" name="paket" :value="key" x-model="selectedPackage" class="sr-only">
-                                                <div class="p-5 rounded-2xl border border-border bg-base text-center transition-all"
-                                                    :class="selectedPackage === key ? 'border-accent bg-accent/5 ring-4 ring-accent/10' : ''">
-                                                    <div class="text-[9px] text-gray-600 font-bold uppercase mb-1 tracking-tighter" x-text="pkg.nama"></div>
-                                                    <div class="text-lg font-bold text-white" x-text="'Rp ' + pkg.harga.toLocaleString('id-ID')"></div>
+                                                <div class="p-4 rounded-xl border border-border bg-surface text-center transition-all"
+                                                    :class="selectedPackage === key ? 'border-accent bg-accent/5 ring-1 ring-accent' : 'hover:border-gray-600'">
+                                                    <div class="text-xs text-gray-400 font-medium mb-1" x-text="pkg.nama"></div>
+                                                    <div class="text-base font-bold text-white" x-text="'Rp ' + pkg.harga.toLocaleString('id-ID')"></div>
                                                 </div>
                                             </label>
                                         </template>
                                     </div>
 
                                     <input type="hidden" name="jenis_bot" x-model="selectedBot">
-                                    <button type="submit" :disabled="isLoading" class="w-full relative group bg-white hover:bg-accent text-black hover:text-white font-bold py-5 rounded-2xl transition-all flex items-center justify-center gap-4 overflow-hidden">
-                                        <span class="relative z-10 text-[11px] uppercase tracking-[0.2em]" x-text="isLoading ? 'PROSES DEPLOYMENT...' : 'KONFIRMASI AKTIVASI'"></span>
-                                        <svg x-show="!isLoading" class="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                                        </svg>
+                                    <button type="submit" :disabled="isLoading" class="w-full bg-white hover:bg-gray-200 text-black font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
+                                        <span x-text="isLoading ? 'Memproses Pesanan...' : 'Lanjutkan ke Pembayaran'"></span>
                                     </button>
                                 </div>
                             </div>
@@ -358,153 +320,148 @@
             </div>
         </main>
 
-        <main x-show="view === 'checkout'" class="relative z-10 pt-32 pb-32 px-6" x-transition x-cloak>
-            <div class="max-w-2xl mx-auto">
-                <div class="pro-card rounded-[3rem] p-12 text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-full h-1 bg-accent/20">
+        <main x-show="view === 'checkout'" class="relative z-10 pt-24 pb-24 px-6" x-transition x-cloak>
+            <div class="max-w-lg mx-auto">
+                <div class="pro-card rounded-3xl p-8 md:p-10 text-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-surface">
                         <div class="h-full bg-accent transition-all duration-1000" :style="`width: ${(timeLeft/300)*100}%` "></div>
                     </div>
 
-                    <div class="mb-10">
-                        <h2 class="text-3xl font-extrabold text-white mb-3">Gateway Pembayaran</h2>
-                        <div class="flex items-center justify-center gap-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                            <span class="w-2 h-2 rounded-full bg-warning animate-pulse"></span>Awaiting System Verification
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-white mb-2">Selesaikan Pembayaran</h2>
+                        <div class="flex items-center justify-center gap-2 text-sm text-gray-400">
+                            <span class="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
+                            Menunggu pembayaran masuk...
                         </div>
                     </div>
 
-                    <div class="inline-block p-6 bg-white rounded-3xl mb-10 qris-glow relative">
-                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrisData)" alt="QRIS Pakasir" class="w-64 h-64 md:w-80 md:h-80">
+                    <div class="inline-block p-4 bg-white rounded-2xl mb-8 shadow-lg shadow-accent/10 relative">
+                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrisData)" alt="QRIS" class="w-56 h-56 md:w-64 md:h-64 rounded-lg">
 
-                        <div x-show="status !== 'PENDING'" class="absolute inset-0 bg-base/95 backdrop-blur-md rounded-3xl flex flex-col items-center justify-center p-8">
+                        <div x-show="status !== 'PENDING'" class="absolute inset-0 bg-base/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-6 text-center">
+                            
                             <template x-if="status === 'COMPLETED' || status === 'SUCCESS'">
-                                <div class="space-y-4">
-                                    <div class="w-16 h-16 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                <div class="space-y-3">
+                                    <div class="w-12 h-12 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                     </div>
-                                    <div class="text-success font-black text-2xl tracking-tighter">DEPLOYMENT SUKSES</div>
-                                    <p class="text-gray-500 text-xs font-medium">Bot sudah berhasil disewa dan masuk ke grup Anda.</p>
-                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="block w-full bg-white text-black py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest mt-6">Kembali ke Beranda</button>
+                                    <div class="text-success font-bold text-lg">Pembayaran Berhasil!</div>
+                                    <p class="text-gray-300 text-sm">Bot sedang dalam proses bergabung ke grup kamu.</p>
+                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="mt-4 bg-white text-black px-4 py-2 rounded-lg font-medium text-sm">Kembali ke Beranda</button>
                                 </div>
                             </template>
+
                             <template x-if="status === 'PAID'">
-                                <div class="space-y-4">
-                                    <div class="w-16 h-16 bg-accent/20 text-accent rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div class="space-y-3">
+                                    <div class="w-12 h-12 bg-accent/20 text-accent rounded-full flex items-center justify-center mx-auto animate-pulse">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </div>
-                                    <div class="text-accent font-black text-2xl tracking-tighter">PEMBAYARAN DITERIMA</div>
-                                    <p class="text-gray-500 text-xs font-medium">Sudah scan QRIS dan bayar. Sedang memproses...</p>
+                                    <div class="text-accent font-bold text-lg">Dana Diterima</div>
+                                    <p class="text-gray-300 text-sm">Pembayaranmu sudah masuk. Sistem sedang memproses...</p>
                                 </div>
                             </template>
+
                             <template x-if="status === 'WAITING'">
-                                <div class="space-y-4">
-                                    <div class="w-16 h-16 bg-warning/20 text-warning rounded-full flex items-center justify-center mx-auto mb-4 animate-spin">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                                <div class="space-y-3">
+                                    <div class="w-12 h-12 bg-warning/20 text-warning rounded-full flex items-center justify-center mx-auto animate-spin">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                                     </div>
-                                    <div class="text-warning font-black text-2xl tracking-tighter">MENUNGGU BOT</div>
-                                    <p class="text-gray-500 text-xs font-medium">Menunggu bot join ke grup Anda...</p>
+                                    <div class="text-warning font-bold text-lg">Sedang Proses</div>
+                                    <p class="text-gray-300 text-sm">Menunggu bot masuk ke grup kamu...</p>
                                 </div>
                             </template>
+
                             <template x-if="status === 'ERROR'">
-                                <div class="space-y-4">
-                                    <div class="w-16 h-16 bg-danger/20 text-danger rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div class="space-y-3">
+                                    <div class="w-12 h-12 bg-danger/20 text-danger rounded-full flex items-center justify-center mx-auto">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </div>
-                                    <div class="text-danger font-black text-2xl tracking-tighter">GAGAL JOIN GRUP</div>
-                                    <p class="text-gray-500 text-xs font-medium">Bot gagal join. Silahkan hubungi Owner.</p>
-                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="block w-full bg-white text-black py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest mt-6">Kembali ke Beranda</button>
+                                    <div class="text-danger font-bold text-lg">Gagal Join Grup</div>
+                                    <p class="text-gray-300 text-sm">Ada kendala saat bot mencoba masuk. Hubungi admin.</p>
+                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="mt-4 bg-white text-black px-4 py-2 rounded-lg font-medium text-sm">Kembali ke Beranda</button>
                                 </div>
                             </template>
+
                             <template x-if="status === 'EXPIRED' || status === 'CANCELLED'">
-                                <div class="space-y-4 text-center">
-                                    <div class="text-danger font-black text-xl italic uppercase" x-text="status"></div>
-                                    <button @click="view = 'order'; history.pushState(null, '', '/')" class="block text-gray-500 hover:text-white transition-colors text-[10px] font-bold uppercase underline underline-offset-8 mx-auto mt-4">Buat Pesanan Baru</button>
+                                <div class="space-y-3">
+                                    <div class="text-danger font-bold text-lg" x-text="status === 'EXPIRED' ? 'Kedaluwarsa' : 'Dibatalkan'"></div>
+                                    <p class="text-gray-300 text-sm">Waktu pembayaran habis atau pesanan dibatalkan.</p>
+                                    <button @click="view = 'order'; history.pushState(null, '', '/')" class="mt-4 border border-border text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-surface">Buat Pesanan Baru</button>
                                 </div>
                             </template>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 text-left mb-10">
-                        <div class="p-5 bg-base border border-border rounded-2xl">
-                            <span class="block text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-1">Invoice ID</span>
-                            <span class="font-mono text-xs text-white" x-text="orderId"></span>
+                    <div class="grid grid-cols-2 gap-3 text-left mb-8">
+                        <div class="p-4 bg-surface border border-border rounded-xl">
+                            <span class="block text-xs font-medium text-gray-500 mb-1">ID Pesanan</span>
+                            <span class="font-mono text-sm text-white" x-text="orderId"></span>
                         </div>
-                        <div class="p-5 bg-base border border-border rounded-2xl">
-                            <span class="block text-[9px] font-bold text-gray-600 uppercase tracking-widest mb-1">Expires In</span>
-                            <span class="font-mono text-xs text-warning" x-text="formatTime()"></span>
+                        <div class="p-4 bg-surface border border-border rounded-xl">
+                            <span class="block text-xs font-medium text-gray-500 mb-1">Batas Waktu</span>
+                            <span class="font-mono text-sm text-warning" x-text="formatTime()"></span>
                         </div>
-                        <div class="col-span-2 p-6 bg-accent/5 border border-accent/20 rounded-2xl flex justify-between items-center">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total Tagihan</span>
-                            <span class="text-2xl font-black text-white" x-text="'Rp ' + harga.toLocaleString('id-ID')"></span>
+                        <div class="col-span-2 p-5 bg-accent/5 border border-accent/20 rounded-xl flex justify-between items-center">
+                            <span class="text-sm font-medium text-gray-400">Total Tagihan</span>
+                            <span class="text-xl font-bold text-white" x-text="'Rp ' + harga.toLocaleString('id-ID')"></span>
                         </div>
                     </div>
 
-                    <button @click="cancelOrder" class="text-[10px] font-bold text-gray-700 hover:text-danger transition-colors uppercase tracking-[0.2em]">Batalkan Transaksi</button>
+                    <button @click="cancelOrder" class="text-sm font-medium text-gray-500 hover:text-danger transition-colors underline underline-offset-4">Batalkan Transanan</button>
 
-                    <div class="mt-12 flex items-center justify-center gap-6 opacity-30">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-5">
-                        <span class="text-[9px] font-bold uppercase tracking-widest">Secure Gateway by Pakasir</span>
+                    <div class="mt-8 pt-6 border-t border-border flex flex-col items-center justify-center gap-3">
+                        <span class="text-xs text-gray-500 font-medium">Pembayaran didukung oleh:</span>
+                        <div class="flex items-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6">
+                            <span class="text-sm font-bold">Pakasir</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <footer class="border-t border-border py-20 bg-base relative z-10 mt-auto">
-        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-16">
+    <footer class="border-t border-border py-12 bg-base relative z-10 mt-auto">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
             <div class="md:col-span-2">
-                <div class="flex items-center gap-3 mb-8">
+                <div class="flex items-center gap-3 mb-6">
                     <div class="w-6 h-6 bg-white rounded flex items-center justify-center">
                         <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="3"></path>
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2.5"></path>
                         </svg>
                     </div>
-                    <span class="font-mono font-bold text-lg text-white tracking-tighter uppercase italic">Raven.Infrastructure</span>
+                    <span class="font-bold text-lg text-white">RavenBots</span>
                 </div>
-                <p class="text-gray-500 text-xs font-medium max-w-sm leading-relaxed mb-8">
-                    Penyedia framework otomasi WhatsApp tingkat lanjut dengan fokus pada skalabilitas grup dan keamanan data. Dibangun untuk performa industri.
+                <p class="text-gray-400 text-sm max-w-sm leading-relaxed mb-6">
+                    Solusi bot WhatsApp cerdas untuk mengelola dan meramaikan grup komunitasmu. Praktis, cepat, dan terpercaya.
                 </p>
-                <div class="flex gap-4">
-                    <div class="w-8 h-8 rounded bg-border flex items-center justify-center text-gray-500 hover:text-white transition-colors cursor-pointer">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.493 1.109-1.1 1.109zm8 6.891h-2v-3.86c0-2.32-2.61-2.14-2.61 0v3.86h-2v-6h2v1.093c.872-1.616 4.61-1.736 4.61 2.507v2.4z" />
-                        </svg>
-                    </div>
-                    <div class="w-8 h-8 rounded bg-border flex items-center justify-center text-gray-500 hover:text-white transition-colors cursor-pointer">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-                        </svg>
-                    </div>
-                </div>
             </div>
+            
             <div>
-                <h5 class="text-white font-bold text-[10px] uppercase tracking-[0.3em] mb-8">Resources</h5>
-                <ul class="space-y-4 text-[11px] text-gray-600 font-bold uppercase italic">
-                    <li><a href="#" class="hover:text-accent transition-colors">API References</a></li>
-                    <li><a href="#" class="hover:text-accent transition-colors">Service Status</a></li>
-                    <li><a href="#" class="hover:text-accent transition-colors">Security Audit</a></li>
-                    <li><a href="#" class="hover:text-accent transition-colors">Changelog</a></li>
+                <h5 class="text-white font-semibold text-sm mb-4">Layanan</h5>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-accent transition-colors">Cara Penggunaan</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Status Server</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Pembaruan Sistem</a></li>
                 </ul>
             </div>
+            
             <div>
-                <h5 class="text-white font-bold text-[10px] uppercase tracking-[0.3em] mb-8">Legal</h5>
-                <ul class="space-y-4 text-[11px] text-gray-600 font-bold uppercase italic">
-                    <li><a href="#" class="hover:text-accent transition-colors">Privacy Policy</a></li>
-                    <li><a href="#" class="hover:text-accent transition-colors">Terms of Use</a></li>
-                    <li><a href="#" class="hover:text-accent transition-colors">License Agreement</a></li>
-                    <li><a href="#" class="hover:text-accent transition-colors">Cookie Policy</a></li>
+                <h5 class="text-white font-semibold text-sm mb-4">Bantuan</h5>
+                <ul class="space-y-3 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-accent transition-colors">Hubungi Admin</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Syarat & Ketentuan</a></li>
+                    <li><a href="#" class="hover:text-accent transition-colors">Kebijakan Privasi</a></li>
                 </ul>
             </div>
         </div>
-        <div class="max-w-7xl mx-auto px-6 mt-20 pt-10 border-t border-border flex flex-col md:flex-row justify-between items-center gap-6">
-            <span class="text-[9px] font-bold text-gray-700 uppercase tracking-widest">&copy; 2026 RAVENBOTS.SYSTEMS. ALL RIGHTS RESERVED.</span>
-            <div class="flex items-center gap-8">
+        
+        <div class="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+            <span class="text-sm text-gray-500">&copy; 2026 RavenBots. Hak Cipta Dilindungi.</span>
+            <div class="flex items-center gap-6">
                 <div class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 rounded-full bg-success"></div>
-                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Network: Optimal</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-1.5 h-1.5 rounded-full bg-accent"></div>
-                    <span class="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Protocol: Encrypted</span>
+                    <div class="w-2 h-2 rounded-full bg-success"></div>
+                    <span class="text-xs font-medium text-gray-400">Semua Sistem Normal</span>
                 </div>
             </div>
         </div>
