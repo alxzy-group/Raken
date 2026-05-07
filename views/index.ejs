@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ravenzena Bot | Layanan Bot WhatsApp</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -71,6 +73,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('ravenApp', () => ({
                 view: (<%- JSON.stringify(typeof orderId !== 'undefined' ? orderId : '') %> && <%- JSON.stringify(typeof status !== 'undefined' ? status : 'PENDING') %> === 'PENDING') ? 'checkout' : 'home',
+                mobileMenuOpen: false,
                 pricing: <%- JSON.stringify(typeof pricing !== 'undefined' ? pricing : {}) %>,
                 contacts: <%- JSON.stringify(typeof contacts !== 'undefined' ? contacts : []) %>,
                 infoGroups: <%- JSON.stringify(typeof infoGroups !== 'undefined' ? infoGroups : {}) %>,
@@ -132,6 +135,7 @@
                             if(this.timeLeft === 0 && this.status === 'PENDING') this.status = 'EXPIRED';
                         }
                     }, 1000);
+
                     const poll = setInterval(async () => {
                         if(['COMPLETED', 'SUCCESS', 'EXPIRED', 'CANCELLED', 'ERROR'].includes(this.status)) {
                             clearInterval(poll);
@@ -192,11 +196,24 @@
                 <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="bg-white text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-all">Pesan Sekarang</button>
                 <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="bg-surface border border-border text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all">Kembali</button>
             </div>
+
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white p-2 focus:outline-none">
+                <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                <svg x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div x-show="mobileMenuOpen" x-transition class="md:hidden absolute top-16 left-0 w-full bg-base/95 border-b border-border flex flex-col p-4 gap-2 backdrop-blur-md">
+            <button @click="view = 'home'; history.pushState(null, '', '/'); mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Beranda</button>
+            <button @click="view = 'order'; mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Pesan Sekarang</button>
         </div>
     </nav>
 
     <div class="flex-grow">
-        
         <main x-show="view === 'home'" class="relative z-10 pt-32 pb-24 px-6 flex flex-col items-center justify-center min-h-[80vh] text-center" x-transition x-cloak>
             <div class="max-w-3xl mx-auto">
                 <div data-aos="fade-down" class="inline-block px-3 py-1 bg-accent/10 border border-accent/20 rounded-full mb-6">
@@ -248,7 +265,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <template x-for="(bot, index) in [
                         {id: 'store', name: 'Bot Store', desc: 'Cocok untuk jualan. Ada fitur simpan data, katalog produk, dan balasan otomatis.', icon: 'M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z M9 12h6 M9 16h6'},
-                        {id: 'guild', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi mini-games, sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
+                        {id: 'guild', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
                         {id: 'cc', name: 'Bot CC', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
                     ]" :key="index">
                         <div data-aos="fade-up" :data-aos-delay="index * 100" @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer"
