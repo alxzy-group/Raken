@@ -319,7 +319,7 @@
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-3 mb-8">
-                                        <template x-for="(pkg, key) in pricing[selectedBot]" :key="key">
+                                        <template x-for="(pkg, key) in (pricing[selectedBot] || {})" :key="key">
                                             <label class="cursor-pointer" data-aos="zoom-in">
                                                 <input type="radio" name="paket" :value="key" x-model="selectedPackage" class="sr-only">
                                                 <div class="p-4 rounded-xl border border-[#262626] bg-[#1a1a1a] text-center transition-all"
