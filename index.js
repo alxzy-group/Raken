@@ -6,7 +6,7 @@ const { createTransaction, cancelTransaction } = require('./pakasir');
 const config = require('./config');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -24,15 +24,19 @@ app.get('/favicon.png', (req, res) => {
 });
 
 app.get('/', async (req, res) => {
+    const pricingData = config.PRICING || { store: {}, guild: {}, cc: {} };
+    const infoGroups = config.INFO_GROUP_LINK || {};
+    const contacts = config.CONTACT_OWNER || [];
+
     if (req.query.checkout) {
         try {
             const db = await githubDb.getDB();
             const order = db.data.find(o => o.id === req.query.checkout);
             if (order) {
                 return res.render('index', { 
-                    pricing: config.PRICING, 
-                    contacts: config.CONTACT_OWNER,
-                    infoGroups: config.INFO_GROUP_LINK,
+                    pricing: pricingData, 
+                    contacts: contacts,
+                    infoGroups: infoGroups,
                     orderId: order.id, 
                     qris: order.payment_number,
                     harga: order.harga,
@@ -43,9 +47,9 @@ app.get('/', async (req, res) => {
         } catch(e) {}
     }
     res.render('index', { 
-        pricing: config.PRICING, 
-        contacts: config.CONTACT_OWNER,
-        infoGroups: config.INFO_GROUP_LINK,
+        pricing: pricingData, 
+        contacts: contacts,
+        infoGroups: infoGroups,
         orderId: null, 
         qris: null, 
         harga: 0, 
@@ -57,15 +61,17 @@ app.get('/', async (req, res) => {
 app.post('/checkout', async (req, res) => {
     try {
         const { email, link_group, jenis_bot, tipe_order, paket } = req.body;
+        const pricingData = config.PRICING || { store: {}, guild: {}, cc: {} };
+        const infoGroups = config.INFO_GROUP_LINK || {};
         
-        if (!email || !link_group || !jenis_bot || !tipe_order || !paket || !config.PRICING[jenis_bot] || !config.PRICING[jenis_bot][paket]) {
-            return res.status(400).send('Data tidak valid. Pastikan semua field terisi.');
+        if (!email || !link_group || !jenis_bot || !tipe_order || !paket || !pricingData[jenis_bot] || !pricingData[jenis_bot][paket]) {
+            return res.status(400).json({ success: false, message: 'Data tidak valid. Pastikan semua field terisi.' });
         }
 
-        const harga = config.PRICING[jenis_bot][paket].harga;
-        const hari = config.PRICING[jenis_bot][paket].hari;
+        const harga = pricingData[jenis_bot][paket].harga;
+        const hari = pricingData[jenis_bot][paket].hari;
         const orderId = 'ORD-' + Date.now();
-        const groupInfoLink = config.INFO_GROUP_LINK[jenis_bot] || '#';
+        const groupInfoLink = infoGroups[jenis_bot] || '#';
 
         let trx;
         let finalStatus = 'PENDING';
@@ -155,3 +161,5 @@ app.get('/status/:id', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Ravenweb berjalan di http://localhost:${PORT}`);
 });
+
+module.exports = app;
