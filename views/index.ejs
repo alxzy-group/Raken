@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RavenBots | Layanan Bot WhatsApp</title>
+    <title>Ravenzena Bot | Layanan Bot WhatsApp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,7 +69,8 @@
                 view: (<%- JSON.stringify(typeof orderId !== 'undefined' ? orderId : '') %> && <%- JSON.stringify(typeof status !== 'undefined' ? status : 'PENDING') %> === 'PENDING') ? 'checkout' : 'home',
                 pricing: <%- JSON.stringify(typeof pricing !== 'undefined' ? pricing : {}) %>,
                 contacts: <%- JSON.stringify(typeof contacts !== 'undefined' ? contacts : []) %>,
-                selectedBot: 'store', 
+                infoGroups: <%- JSON.stringify(typeof infoGroups !== 'undefined' ? infoGroups : {}) %>,
+                selectedBot: '<%- typeof jenis_bot !== 'undefined' ? jenis_bot : 'store' %>', 
                 orderType: 'baru',
                 selectedPackage: 'paket2',
                 orderId: <%- JSON.stringify(typeof orderId !== 'undefined' ? orderId : '') %>,
@@ -103,6 +104,7 @@
                             this.qrisData = result.qris;
                             this.harga = result.harga;
                             this.status = result.status || 'PENDING';
+                            this.selectedBot = result.jenis_bot || this.selectedBot;
                             this.timeLeft = 300;
                             history.pushState(null, '', '/?checkout=' + this.orderId);
                             this.view = 'checkout';
@@ -126,7 +128,7 @@
                             if(this.timeLeft === 0 && this.status === 'PENDING') this.status = 'EXPIRED';
                         }
                     }, 1000);
-
+                    
                     const poll = setInterval(async () => {
                         if(['COMPLETED', 'SUCCESS', 'EXPIRED', 'CANCELLED', 'ERROR'].includes(this.status)) {
                             clearInterval(poll);
@@ -175,7 +177,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
                 </div>
-                <span class="font-bold text-lg text-white">Raven<span class="text-accent">Bots</span></span>
+                <span class="font-bold text-lg text-white">Ravenzena<span class="text-accent">Bot</span></span>
             </div>
 
             <div class="hidden md:flex items-center gap-8">
@@ -239,8 +241,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <template x-for="(bot, index) in [
                         {id: 'store', name: 'Bot Store', desc: 'Cocok untuk jualan. Ada fitur simpan data, katalog produk, dan balasan otomatis.', icon: 'M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z M9 12h6 M9 16h6'},
-                        {id: 'guild', name: 'Bot Komunitas', desc: 'Bikin grup makin seru. Dilengkapi mini-games, sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
-                        {id: 'cc', name: 'Bot Premium', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
+                        {id: 'guild', name: 'Bot V3', desc: 'Bikin grup makin seru. Dilengkapi mini-games, sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
+                        {id: 'cc', name: 'Bot V4', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
                     ]" :key="index">
                         <div @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer"
                             :class="selectedBot === bot.id ? 'active-module' : ''">
@@ -349,7 +351,12 @@
                                     </div>
                                     <div class="text-success font-bold text-lg">Pembayaran Berhasil!</div>
                                     <p class="text-gray-300 text-sm">Bot sedang dalam proses bergabung ke grup kamu.</p>
-                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="mt-4 bg-white text-black px-4 py-2 rounded-lg font-medium text-sm">Kembali ke Beranda</button>
+                                    
+                                    <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="block w-full mt-4 bg-accent hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg shadow-accent/20">
+                                        Gabung Grup Info Bot
+                                    </a>
+
+                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="mt-2 w-full border border-border text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-surface transition-all">Kembali ke Beranda</button>
                                 </div>
                             </template>
 
@@ -432,7 +439,7 @@
                             <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2.5"></path>
                         </svg>
                     </div>
-                    <span class="font-bold text-lg text-white">RavenBots</span>
+                    <span class="font-bold text-lg text-white">Ravenzena Bot</span>
                 </div>
                 <p class="text-gray-400 text-sm max-w-sm leading-relaxed mb-6">
                     Solusi bot WhatsApp cerdas untuk mengelola dan meramaikan grup komunitasmu. Praktis, cepat, dan terpercaya.
@@ -459,7 +466,7 @@
         </div>
         
         <div class="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
-            <span class="text-sm text-gray-500">&copy; 2026 RavenBots. Hak Cipta Dilindungi.</span>
+            <span class="text-sm text-gray-500">&copy; 2026 Ravenzena Bot. Hak Cipta Dilindungi.</span>
             <div class="flex items-center gap-6">
                 <div class="flex items-center gap-2">
                     <div class="w-2 h-2 rounded-full bg-success"></div>
