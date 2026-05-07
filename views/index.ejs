@@ -264,7 +264,7 @@
                         {id: 'guild', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
                         {id: 'cc', name: 'Bot CC', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
                     ]" :key="index">
-                        <div data-aos="fade-up" :data-aos-delay="index * 100" @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer"
+                        <div data-aos="fade-up" :data-aos-delay="index * 100" @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer flex flex-col h-full"
                             :class="selectedBot === bot.id ? 'active-module' : ''">
                             <div class="w-12 h-12 bg-surface border border-border flex items-center justify-center rounded-lg mb-5 transition-colors"
                                 :class="selectedBot === bot.id ? 'bg-accent/10 border-accent/30 text-accent' : 'text-gray-500'">
@@ -273,7 +273,16 @@
                                 </svg>
                             </div>
                             <h3 class="text-lg font-semibold text-white mb-2" x-text="bot.name"></h3>
-                            <p class="text-sm text-gray-400 leading-relaxed" x-text="bot.desc"></p>
+                            <p class="text-sm text-gray-400 leading-relaxed flex-grow" x-text="bot.desc"></p>
+                            
+                            <div class="mt-4 pt-4 border-t border-border flex items-center justify-between">
+                                <span class="text-[10px] uppercase tracking-widest font-bold text-gray-500">Preview</span>
+                                <a :href="infoGroups[bot.id] || '#'" target="_blank" @click.stop 
+                                   class="text-xs font-bold text-accent hover:text-white transition-colors flex items-center gap-1">
+                                    Join Info
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </a>
+                            </div>
                         </div>
                     </template>
                 </div>
@@ -332,6 +341,14 @@
                                     </div>
 
                                     <input type="hidden" name="jenis_bot" x-model="selectedBot">
+                                    
+                                    <div x-show="infoGroups[selectedBot]" class="mb-4">
+                                        <a :href="infoGroups[selectedBot]" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 bg-accent/10 border border-accent/30 text-accent hover:bg-accent hover:text-white rounded-xl text-sm font-bold transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                            Gabung Grup Info Bot
+                                        </a>
+                                    </div>
+
                                     <button type="submit" :disabled="isLoading" class="w-full bg-white hover:bg-gray-200 text-black font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
                                         <span x-text="isLoading ? 'Memproses Pesanan...' : 'Lanjutkan ke Pembayaran'"></span>
                                     </button>

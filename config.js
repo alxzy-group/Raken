@@ -32,5 +32,10 @@ module.exports = {
             'paket2': { nama: '1 Bulan', harga: 13000, hari: 30 },
             'paket3': { nama: '2 Bulan', harga: 21000, hari: 60 }
         }
+    },
+    INFO_GROUP_LINK: {
+        store: 'https://chat.whatsapp.com/Ew4N1TYPtuN8Il3ADZ0J9y',
+        guild: 'https://chat.whatsapp.com/KZHbXWdMWluCGmvo9SUOzA',
+        cc: 'https://chat.whatsapp.com/JSuVPInZuG56IBGxYTs3u7'
     }
 };
