@@ -2,7 +2,7 @@ global.debug = false;
 module.exports = {
     PAKASIR_KEY: 'egY52Qm9D3WdeFpXoB9nipg5zFfhqDMC',
     PAKASIR_SLUG: 'ravenzena-auto-order',
-    GITHUB_TOKEN: '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',
+    GITHUB_TOKEN: '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',
     GITHUB_OWNER: 'alxzy-group',
     GITHUB_REPO: 'alxzydb',
     FILE_PATH: 'orders.json',
