@@ -11,8 +11,17 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'favicon.ico'));
+});
+
+app.get('/favicon.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'favicon.png'));
+});
 
 app.get('/', async (req, res) => {
     if (req.query.checkout) {
@@ -23,10 +32,12 @@ app.get('/', async (req, res) => {
                 return res.render('index', { 
                     pricing: config.PRICING, 
                     contacts: config.CONTACT_OWNER,
+                    infoGroups: config.INFO_GROUP_LINK,
                     orderId: order.id, 
                     qris: order.payment_number,
                     harga: order.harga,
-                    status: order.status
+                    status: order.status,
+                    jenis_bot: order.jenis_bot
                 });
             }
         } catch(e) {}
@@ -34,10 +45,12 @@ app.get('/', async (req, res) => {
     res.render('index', { 
         pricing: config.PRICING, 
         contacts: config.CONTACT_OWNER,
+        infoGroups: config.INFO_GROUP_LINK,
         orderId: null, 
         qris: null, 
         harga: 0, 
-        status: 'PENDING' 
+        status: 'PENDING',
+        jenis_bot: 'store'
     });
 });
 
@@ -52,6 +65,7 @@ app.post('/checkout', async (req, res) => {
         const harga = config.PRICING[jenis_bot][paket].harga;
         const hari = config.PRICING[jenis_bot][paket].hari;
         const orderId = 'ORD-' + Date.now();
+        const groupInfoLink = config.INFO_GROUP_LINK[jenis_bot] || '#';
 
         let trx;
         let finalStatus = 'PENDING';
@@ -73,6 +87,7 @@ app.post('/checkout', async (req, res) => {
             id: orderId,
             email: email,
             link_group: link_group,
+            info_group: groupInfoLink,
             jenis_bot: jenis_bot,
             tipe_order: tipe_order,
             paket: paket,
@@ -91,7 +106,8 @@ app.post('/checkout', async (req, res) => {
             qris: trx.payment_number,
             harga: harga,
             expired: trx.expired_at,
-            status: finalStatus
+            status: finalStatus,
+            jenis_bot: jenis_bot
         });
 
     } catch (error) {
