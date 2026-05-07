@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="id" class="dark">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ravenzena Bot | Layanan Bot WhatsApp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -40,22 +41,18 @@
             color: #E5E7EB;
             scroll-behavior: smooth;
         }
-
         .grid-lines {
             background-image: linear-gradient(to right, #111111 1px, transparent 1px),
                 linear-gradient(to bottom, #111111 1px, transparent 1px);
             background-size: 40px 40px;
         }
-
         .pro-card {
             background: #0A0A0A;
             border: 1px solid #262626;
             transition: all 0.2s ease-in-out;
         }
-
         .pro-card:hover { border-color: #3B82F6; }
         .active-module { border-color: #3B82F6; background: rgba(59, 130, 246, 0.05); }
-
         [x-cloak] { display: none !important; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #050505; }
@@ -64,6 +61,13 @@
     </style>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                duration: 800,
+                once: true,
+            });
+        });
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('ravenApp', () => ({
                 view: (<%- JSON.stringify(typeof orderId !== 'undefined' ? orderId : '') %> && <%- JSON.stringify(typeof status !== 'undefined' ? status : 'PENDING') %> === 'PENDING') ? 'checkout' : 'home',
@@ -128,7 +132,6 @@
                             if(this.timeLeft === 0 && this.status === 'PENDING') this.status = 'EXPIRED';
                         }
                     }, 1000);
-                    
                     const poll = setInterval(async () => {
                         if(['COMPLETED', 'SUCCESS', 'EXPIRED', 'CANCELLED', 'ERROR'].includes(this.status)) {
                             clearInterval(poll);
@@ -196,20 +199,20 @@
         
         <main x-show="view === 'home'" class="relative z-10 pt-32 pb-24 px-6 flex flex-col items-center justify-center min-h-[80vh] text-center" x-transition x-cloak>
             <div class="max-w-3xl mx-auto">
-                <div class="inline-block px-3 py-1 bg-accent/10 border border-accent/20 rounded-full mb-6">
+                <div data-aos="fade-down" class="inline-block px-3 py-1 bg-accent/10 border border-accent/20 rounded-full mb-6">
                     <span class="text-xs font-medium text-accent">Pembaruan v4.0 sudah rilis 🎉</span>
                 </div>
                 
-                <h1 class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                <h1 data-aos="fade-up" class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
                     Otomatisasi Grup Kamu <br /> 
                     <span class="text-gray-400">Tanpa Ribet.</span>
                 </h1>
                 
-                <p class="text-gray-400 text-lg mb-10">
+                <p data-aos="fade-up" data-aos-delay="100" class="text-gray-400 text-lg mb-10">
                     Tingkatkan interaksi dan kelola grup komunitasmu dengan bot WhatsApp pintar. Mudah diatur, aktif 24/7, dan responsif.
                 </p>
                 
-                <div class="flex flex-wrap items-center justify-center gap-4 mb-10">
+                <div data-aos="fade-up" data-aos-delay="200" class="flex flex-wrap items-center justify-center gap-4 mb-10">
                     <template x-for="(contact, index) in contacts" :key="index">
                         <a :href="contact.type === 'whatsapp' ? 'https://wa.me/' + contact.id : 'https://t.me/' + contact.id" target="_blank"
                            :class="contact.type === 'whatsapp' ? 'bg-success/10 text-success hover:bg-success hover:text-white' : 'bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white'"
@@ -224,7 +227,7 @@
                     </template>
                 </div>
 
-                <button @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-bold hover:bg-gray-200 transition-all">
+                <button data-aos="zoom-in" data-aos-delay="300" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-bold hover:bg-gray-200 transition-all shadow-lg shadow-white/10">
                     Mulai Berlangganan
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
@@ -233,7 +236,7 @@
 
         <main x-show="view === 'order'" class="relative z-10 pt-32 pb-24 px-6" x-transition x-cloak>
             <div class="max-w-5xl mx-auto">
-                <div class="mb-10 text-center md:text-left">
+                <div data-aos="fade-right" class="mb-10 text-center md:text-left">
                     <h1 class="text-3xl md:text-4xl font-bold text-white mb-3">Pilih Paket Bot</h1>
                     <p class="text-gray-400">Pilih jenis layanan yang paling sesuai dengan kebutuhan grup komunitasmu.</p>
                 </div>
@@ -244,7 +247,7 @@
                         {id: 'guild', name: 'Bot V3', desc: 'Bikin grup makin seru. Dilengkapi mini-games, sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
                         {id: 'cc', name: 'Bot V4', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
                     ]" :key="index">
-                        <div @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer"
+                        <div data-aos="fade-up" :data-aos-delay="index * 100" @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer"
                             :class="selectedBot === bot.id ? 'active-module' : ''">
                             <div class="w-12 h-12 bg-surface border border-border flex items-center justify-center rounded-lg mb-5 transition-colors"
                                 :class="selectedBot === bot.id ? 'bg-accent/10 border-accent/30 text-accent' : 'text-gray-500'">
@@ -258,7 +261,7 @@
                     </template>
                 </div>
 
-                <div class="pro-card rounded-2xl overflow-hidden">
+                <div data-aos="fade-up" data-aos-delay="300" class="pro-card rounded-2xl overflow-hidden">
                     <form @submit.prevent="submitForm" class="p-6 md:p-10">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                             <div class="space-y-8">
@@ -270,11 +273,11 @@
                                     <div class="space-y-5">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-400 mb-2">Email Pengelola</label>
-                                            <input type="email" name="email" required placeholder="email@contoh.com" class="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all">
+                                            <input type="email" name="email" required placeholder="email@contoh.com" class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-all">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-400 mb-2">Link Grup WhatsApp</label>
-                                            <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="w-full bg-surface border border-border rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all">
+                                            <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-all">
                                         </div>
                                     </div>
                                 </div>
@@ -300,12 +303,12 @@
 
                                     <div class="grid grid-cols-2 gap-3 mb-8">
                                         <template x-for="(pkg, key) in pricing[selectedBot]" :key="key">
-                                            <label class="cursor-pointer">
+                                            <label class="cursor-pointer" data-aos="zoom-in">
                                                 <input type="radio" name="paket" :value="key" x-model="selectedPackage" class="sr-only">
-                                                <div class="p-4 rounded-xl border border-border bg-surface text-center transition-all"
-                                                    :class="selectedPackage === key ? 'border-accent bg-accent/5 ring-1 ring-accent' : 'hover:border-gray-600'">
-                                                    <div class="text-xs text-gray-400 font-medium mb-1" x-text="pkg.nama"></div>
-                                                    <div class="text-base font-bold text-white" x-text="'Rp ' + pkg.harga.toLocaleString('id-ID')"></div>
+                                                <div class="p-4 rounded-xl border border-[#262626] bg-[#1a1a1a] text-center transition-all"
+                                                    :class="selectedPackage === key ? 'border-[#3B82F6] bg-[#3B82F6]/20 ring-1 ring-[#3B82F6] shadow-md shadow-[#3B82F6]/20' : 'hover:border-gray-500'">
+                                                    <div class="text-xs text-gray-300 font-medium mb-1" x-text="pkg.nama"></div>
+                                                    <div class="text-lg font-extrabold text-white" x-text="'Rp ' + pkg.harga.toLocaleString('id-ID')"></div>
                                                 </div>
                                             </label>
                                         </template>
