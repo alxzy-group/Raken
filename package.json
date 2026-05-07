@@ -12,6 +12,7 @@
     "axios": "^1.16.0",
     "cors": "^2.8.6",
     "ejs": "^5.0.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "dotenv": "latest"
   }
 }
