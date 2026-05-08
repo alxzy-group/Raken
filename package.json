@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "prisma generate",
+    "build": "prisma generate && prisma db push",
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +16,8 @@
     "cors": "^2.8.6",
     "ejs": "^5.0.2",
     "express": "^5.2.1",
-    "dotenv": "latest"
+    "dotenv": "latest",
+    "prisma": "^5.0.0",
+    "@prisma/client": "^5.0.0"
   }
 }

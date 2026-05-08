@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const githubDb = require('./github_db');
+const prismaDb = require('./prisma_db');
 const { createTransaction, cancelTransaction } = require('./pakasir');
 const config = require('./config');
 
@@ -30,8 +30,7 @@ app.get('/', async (req, res) => {
 
     if (req.query.checkout) {
         try {
-            const db = await githubDb.getDB();
-            const order = db.data.find(o => o.id === req.query.checkout);
+            const order = await prismaDb.getOrder(req.query.checkout);
             if (order) {
                 return res.render('index', { 
                     pricing: pricingData, 
@@ -44,7 +43,9 @@ app.get('/', async (req, res) => {
                     jenis_bot: order.jenis_bot
                 });
             }
-        } catch(e) {}
+        } catch(e) {
+            console.error('Render error:', e);
+        }
     }
     res.render('index', { 
         pricing: pricingData, 
@@ -104,7 +105,7 @@ app.post('/checkout', async (req, res) => {
             status: finalStatus,
             created_at: new Date().toISOString()
         };
-        await githubDb.addOrder(orderData);
+        await prismaDb.addOrder(orderData);
 
         res.json({
             success: true,
@@ -124,16 +125,11 @@ app.post('/checkout', async (req, res) => {
 app.post('/cancel/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const db = await githubDb.getDB();
-        const orderIndex = db.data.findIndex(o => o.id === id);
+        const order = await prismaDb.getOrder(id);
         
-        if (orderIndex !== -1 && db.data[orderIndex].status === 'PENDING') {
-            const order = db.data[orderIndex];
+        if (order && order.status === 'PENDING') {
             await cancelTransaction(order.id, order.harga);
-            
-            db.data[orderIndex].status = 'CANCELLED';
-            await githubDb.saveDB(db.data, db.sha);
-            
+            await prismaDb.updateOrderStatus(id, 'CANCELLED');
             res.json({ success: true, message: 'Transaksi berhasil dibatalkan.' });
         } else {
             res.status(400).json({ success: false, message: 'Transaksi tidak ditemukan atau sudah tidak pending.' });
@@ -146,7 +142,7 @@ app.post('/cancel/:id', async (req, res) => {
 app.get('/status/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const status = await githubDb.getOrderStatus(id);
+        const status = await prismaDb.getOrderStatus(id);
 
         if (status) {
             res.json({ status: status });
@@ -155,6 +151,34 @@ app.get('/status/:id', async (req, res) => {
         }
     } catch (e) {
         res.status(500).json({ error: 'Gagal mengecek status' });
+    }
+});
+
+// API Endpoints for Bots
+app.get('/api/orders', async (req, res) => {
+    try {
+        const { jenis_bot } = req.query;
+        let filters = null;
+        if (jenis_bot) {
+            filters = jenis_bot.split(',');
+        }
+        const orders = await prismaDb.getPendingOrders(filters);
+        res.json(orders);
+    } catch (e) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/api/orders/update', async (req, res) => {
+    try {
+        const { id, status } = req.body;
+        if (!id || !status) {
+            return res.status(400).json({ error: 'Missing id or status' });
+        }
+        await prismaDb.updateOrderStatus(id, status);
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 

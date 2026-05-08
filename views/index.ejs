@@ -261,7 +261,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <template x-for="(bot, index) in [
                         {id: 'store', name: 'Bot Store', desc: 'Cocok untuk jualan. Ada fitur simpan data, katalog produk, dan balasan otomatis.', icon: 'M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z M9 12h6 M9 16h6'},
-                        {id: 'guild', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
+                        {id: 'v3', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
                         {id: 'cc', name: 'Bot CC', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
                     ]" :key="index">
                         <div data-aos="fade-up" :data-aos-delay="index * 100" @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer flex flex-col h-full"

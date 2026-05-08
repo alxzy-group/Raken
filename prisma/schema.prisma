@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Order {
+  id             String   @id
+  email          String
+  link_group     String
+  info_group     String?
+  jenis_bot      String
+  tipe_order     String
+  paket          String
+  durasi_hari    String
+  harga          Int
+  payment_number String?
+  expired_at     String?
+  status         String   @default("PENDING")
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+}
