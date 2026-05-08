@@ -1,4 +1,3 @@
-const axios = require('axios');
 const config = require('./config');
 
 const PAKASIR_KEY = config.PAKASIR_KEY;
