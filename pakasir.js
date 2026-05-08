@@ -61,4 +61,22 @@ async function cancelTransaction(orderId, amount) {
     }
 }
 
-module.exports = { createTransaction, cancelTransaction };
+async function getTransactionDetail(orderId, amount) {
+    try {
+        const url = `${BASE_URL}/transactiondetail?project=${PAKASIR_SLUG}&amount=${amount}&order_id=${orderId}&api_key=${PAKASIR_KEY}`;
+        const response = await fetch(url, { method: 'GET' });
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.message || 'Gagal mengambil detail transaksi');
+        }
+        
+        return data.transaction; 
+    } catch (error) {
+        console.error('Pakasir getTransactionDetail error:', error.message);
+        return null;
+    }
+}
+
+module.exports = { createTransaction, cancelTransaction, getTransactionDetail };
+

@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const prismaDb = require('./prisma_db');
-const { createTransaction, cancelTransaction } = require('./pakasir');
+const pakasir = require('./pakasir');
 const config = require('./config');
 
 const app = express();
@@ -87,7 +87,7 @@ app.post('/checkout', async (req, res) => {
                 expired_at: expiredWIB
             };
         } else {
-            trx = await createTransaction(orderId, harga);
+            trx = await pakasir.createTransaction(orderId, harga);
         }
 
         const orderData = {
@@ -128,7 +128,7 @@ app.post('/cancel/:id', async (req, res) => {
         const order = await prismaDb.getOrder(id);
         
         if (order && order.status === 'PENDING') {
-            await cancelTransaction(order.id, order.harga);
+            await pakasir.cancelTransaction(order.id, order.harga);
             await prismaDb.updateOrderStatus(id, 'CANCELLED');
             res.json({ success: true, message: 'Transaksi berhasil dibatalkan.' });
         } else {
@@ -142,17 +142,39 @@ app.post('/cancel/:id', async (req, res) => {
 app.get('/status/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const status = await prismaDb.getOrderStatus(id);
+        const order = await prismaDb.getOrder(id);
 
-        if (status) {
-            res.json({ status: status });
-        } else {
-            res.status(404).json({ error: 'Order tidak ditemukan' });
+        if (!order) {
+            return res.status(404).json({ error: 'Order tidak ditemukan' });
         }
+
+        if (order.status === 'PENDING') {
+            // Simulasi Sukses Otomatis untuk Mode Debug
+            if (global.debug && order.payment_number === 'DEBUG-QRIS') {
+                const startTime = new Date(order.created_at).getTime();
+                if (Date.now() - startTime > 20000) { // 20 detik
+                    console.log(`[DEBUG] Simulasi pembayaran sukses untuk: ${id}`);
+                    await prismaDb.updateOrderStatus(id, 'PAID');
+                    return res.json({ status: 'PAID' });
+                }
+                return res.json({ status: 'PENDING' });
+            }
+
+            // Cek status asli ke Pakasir
+            const detail = await pakasir.getTransactionDetail(id, order.harga);
+            if (detail && detail.status === 'completed') {
+                await prismaDb.updateOrderStatus(id, 'PAID');
+                return res.json({ status: 'PAID' });
+            }
+        }
+
+        res.json({ status: order.status });
     } catch (e) {
+        console.error('Status check error:', e);
         res.status(500).json({ error: 'Gagal mengecek status' });
     }
 });
+
 
 // API Endpoints for Bots
 app.get('/api/orders', async (req, res) => {
