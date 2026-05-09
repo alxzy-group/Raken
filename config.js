@@ -13,7 +13,7 @@ module.exports = {
     ],
     PRICING: {
         store: {
-            'paket1': { nama: '1 Minggu', harga: 1000, hari: 7 },
+            'paket1': { nama: '1 Minggu', harga: 5000, hari: 7 },
             'paket2': { nama: '1 Bulan', harga: 10000, hari: 30 },
             'paket3': { nama: '2 Bulan', harga: 18000, hari: 60 }
         },
