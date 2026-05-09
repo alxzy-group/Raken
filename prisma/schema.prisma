@@ -22,4 +22,17 @@ model Order {
   status         String   @default("PENDING")
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
+  group          Group?
 }
+
+model Group {
+  id          String   @id @default(uuid())
+  orderId     String   @unique
+  name        String?
+  photo       String?
+  jid         String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order       Order    @relation(fields: [orderId], references: [id])
+}
+

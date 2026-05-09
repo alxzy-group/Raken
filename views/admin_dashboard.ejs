@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Ravenzena Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    colors: { base: '#050505', surface: '#111111', border: '#262626', accent: '#3B82F6', success: '#10B981', warning: '#F59E0B', danger: '#EF4444' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; color: #E5E7EB; }
+        .grid-lines { background-image: linear-gradient(to right, #111111 1px, transparent 1px), linear-gradient(to bottom, #111111 1px, transparent 1px); background-size: 40px 40px; }
+        .order-card { background: #0A0A0A; border: 1px solid #262626; transition: border-color 0.2s; }
+        .order-card:hover { border-color: #3B82F6; }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+    <div class="fixed inset-0 grid-lines z-0 opacity-20"></div>
+    
+    <nav class="sticky top-0 w-full z-50 border-b border-border bg-base/80 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="/favicon.png" alt="Logo" class="w-8 h-8 rounded-lg">
+                <span class="font-bold text-lg text-white">Admin Dashboard</span>
+            </div>
+            <a href="/user/admin/logout" class="text-sm text-gray-400 hover:text-white transition-colors">Logout</a>
+        </div>
+    </nav>
+
+    <main class="relative z-10 max-w-7xl mx-auto px-6 py-12">
+        <div class="flex items-center justify-between mb-10">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">Daftar Pesanan</h1>
+                <p class="text-gray-400">Kelola semua transaksi dan informasi grup.</p>
+            </div>
+            <div class="bg-surface border border-border px-4 py-2 rounded-xl text-sm">
+                Total: <span class="text-accent font-bold"><%= orders.length %></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6">
+            <% if (orders.length === 0) { %>
+                <div class="text-center py-20 bg-surface rounded-3xl border border-border">
+                    <p class="text-gray-500 italic">Belum ada pesanan.</p>
+                </div>
+            <% } %>
+            <% orders.forEach(order => { %>
+                <div class="order-card p-6 rounded-2xl flex flex-col md:flex-row gap-6">
+                    <div class="flex-shrink-0">
+                        <% if (order.group && order.group.photo) { %>
+                            <img src="<%= order.group.photo %>" alt="PP" class="w-24 h-24 rounded-2xl object-cover border border-border">
+                        <% } else { %>
+                            <div class="w-24 h-24 rounded-2xl bg-surface border border-border flex items-center justify-center text-gray-600">
+                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                        <% } %>
+                    </div>
+                    
+                    <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Customer & Group</span>
+                            <div class="text-white font-semibold truncate text-sm md:text-base"><%= order.email %></div>
+                            <div class="text-accent text-sm font-medium mt-1 truncate"><%= order.group ? order.group.name : 'Bot belum join' %></div>
+                            <div class="mt-2 flex gap-2">
+                                <a href="<%= order.link_group %>" target="_blank" class="text-[10px] bg-surface border border-border px-2 py-1 rounded hover:border-accent transition-all">Link Grup</a>
+                                <% if (order.group && order.group.jid) { %>
+                                    <span class="text-[10px] text-gray-500 font-mono self-center"><%= order.group.jid %></span>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Paket & Status</span>
+                            <div class="text-gray-200 text-sm"><%= order.jenis_bot.toUpperCase() %> - <%= order.paket %> (<%= order.durasi_hari %> Hari)</div>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase
+                                    <%= order.status === 'PAID' ? 'bg-blue-500/10 text-blue-500' : 
+                                       order.status === 'COMPLETED' ? 'bg-success/10 text-success' : 
+                                       order.status === 'PENDING' ? 'bg-warning/10 text-warning' : 
+                                       order.status === 'ERROR' ? 'bg-danger/10 text-danger' : 'bg-gray-800 text-gray-400' %>">
+                                    <%= order.status %>
+                                </span>
+                                <span class="text-[10px] text-gray-600 font-mono"><%= order.id %></span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-between">
+                            <div>
+                                <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Waktu Pesan</span>
+                                <div class="text-gray-300 text-xs"><%= new Date(order.created_at).toLocaleString('id-ID') %></div>
+                            </div>
+                            <div class="text-right text-xl font-bold text-white">
+                                Rp <%= order.harga.toLocaleString('id-ID') %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </main>
+</body>
+</html>

@@ -86,11 +86,49 @@ async function getPendingOrders(jenisBot) {
     }
 }
 
+async function getAllOrders() {
+    try {
+        return await prisma.order.findMany({
+            include: { group: true },
+            orderBy: { created_at: 'desc' }
+        });
+    } catch (error) {
+        console.error('Prisma getAllOrders error:', error);
+        return [];
+    }
+}
+
+async function updateGroupInfo(data) {
+    try {
+        const { orderId, name, photo, jid } = data;
+        return await prisma.group.upsert({
+            where: { orderId: orderId },
+            update: {
+                name: name,
+                photo: photo,
+                jid: jid
+            },
+            create: {
+                orderId: orderId,
+                name: name,
+                photo: photo,
+                jid: jid
+            }
+        });
+    } catch (error) {
+        console.error('Prisma updateGroupInfo error:', error);
+        throw error;
+    }
+}
+
 module.exports = { 
     prisma, 
     addOrder, 
     getOrderStatus, 
     getOrder,
     updateOrderStatus, 
-    getPendingOrders 
+    updateOrderStatus, 
+    getPendingOrders,
+    getAllOrders,
+    updateGroupInfo
 };

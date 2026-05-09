@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const prismaDb = require('./prisma_db');
 const pakasir = require('./pakasir');
 const config = require('./config');
@@ -11,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -202,6 +204,50 @@ app.post('/api/orders/update', async (req, res) => {
     } catch (e) {
         res.status(500).json({ error: 'Internal Server Error' });
     }
+});
+
+app.post('/api/groups/update', async (req, res) => {
+    try {
+        const { orderId, name, photo, jid } = req.body;
+        if (!orderId) {
+            return res.status(400).json({ error: 'Missing orderId' });
+        }
+        await prismaDb.updateGroupInfo({ orderId, name, photo, jid });
+        res.json({ success: true });
+    } catch (e) {
+        console.error('API Group Update Error:', e);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Admin Routes
+app.get('/user/admin', (req, res) => {
+    if (req.cookies.admin_token === config.ADMIN_PASSWORD) {
+        return res.redirect('/user/admin/dashboard');
+    }
+    res.render('admin_login', { error: null });
+});
+
+app.post('/user/admin', (req, res) => {
+    const { username, password } = req.body;
+    if (username === 'admin' && password === config.ADMIN_PASSWORD) {
+        res.cookie('admin_token', config.ADMIN_PASSWORD, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+        return res.redirect('/user/admin/dashboard');
+    }
+    res.render('admin_login', { error: 'Username atau Password salah!' });
+});
+
+app.get('/user/admin/dashboard', async (req, res) => {
+    if (req.cookies.admin_token !== config.ADMIN_PASSWORD) {
+        return res.redirect('/user/admin');
+    }
+    const orders = await prismaDb.getAllOrders();
+    res.render('admin_dashboard', { orders });
+});
+
+app.get('/user/admin/logout', (req, res) => {
+    res.clearCookie('admin_token');
+    res.redirect('/user/admin');
 });
 
 app.listen(PORT, () => {

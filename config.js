@@ -1,9 +1,10 @@
 require('dotenv').config();
 
-global.debug = false;
+global.debug = true;
 module.exports = {
     PAKASIR_KEY: process.env.PAKASIR_KEY || 'egY52Qm9D3WdeFpXoB9nipg5zFfhqDMC',
     PAKASIR_SLUG: 'ravenzena-auto-order',
+    ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',
     CONTACT_OWNER: [
         { type: 'whatsapp', id: '6282288978160', name: 'Raken Store' },
         { type: 'whatsapp', id: '6285658762303', name: 'Venn Store' },
@@ -12,7 +13,7 @@ module.exports = {
     ],
     PRICING: {
         store: {
-            'paket1': { nama: '1 Minggu', harga: 5000, hari: 7 },
+            'paket1': { nama: '1 Minggu', harga: 1000, hari: 7 },
             'paket2': { nama: '1 Bulan', harga: 10000, hari: 30 },
             'paket3': { nama: '2 Bulan', harga: 18000, hari: 60 }
         },
