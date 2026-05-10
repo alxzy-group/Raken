@@ -123,27 +123,23 @@ async function updateGroupInfo(data) {
 
 async function syncActiveGroups(groups, jenisBot) {
     try {
-        // We upsert each group in the list
-        for (const group of groups) {
-            await prisma.activeGroup.upsert({
-                where: {
-                    jid_jenisBot: {
-                        jid: group.jid,
-                        jenisBot: jenisBot
-                    }
-                },
-                update: {
-                    name: group.name,
-                    photo: group.photo,
-                    expiredAt: group.expiredAt
-                },
-                create: {
-                    jid: group.jid,
-                    jenisBot: jenisBot,
-                    name: group.name,
-                    photo: group.photo,
-                    expiredAt: group.expiredAt
-                }
+        // 1. Delete old data for this bot type to ensure real-time sync
+        await prisma.activeGroup.deleteMany({
+            where: { jenisBot: jenisBot }
+        });
+
+        // 2. Insert the latest data from the bot
+        if (groups.length > 0) {
+            const dataToInsert = groups.map(group => ({
+                jid: group.jid,
+                jenisBot: jenisBot,
+                name: group.name,
+                photo: group.photo,
+                expiredAt: group.expiredAt
+            }));
+
+            await prisma.activeGroup.createMany({
+                data: dataToInsert
             });
         }
         return true;
