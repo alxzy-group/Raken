@@ -165,25 +165,19 @@
                                 Exp: <span class="font-medium">
                                     <% 
                                         let exp = group.expiredAt;
-                                        let sisaHari = "";
                                         if (exp === 'PERMANENT' || exp === 'permanen') {
-                                            sisaHari = "PERMANEN";
                                     %>
                                         PERMANEN
-                                    <% } else if (!isNaN(exp) && exp !== null) { 
-                                            let diff = parseInt(exp) - Date.now();
-                                            let days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-                                            sisaHari = days <= 0 ? "EXPIRED" : days + " HARI";
-                                    %>
+                                    <% } else if (!isNaN(exp) && exp !== null) { %>
                                         <%= new Date(parseInt(exp)).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) %>
                                     <% } else { %>
                                         <%= exp %>
                                     <% } %>
                                 </span>
                             </div>
-                            <span class="px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase 
-                                <%= sisaHari === 'EXPIRED' ? 'bg-danger text-white' : 'bg-success/20 text-success' %>">
-                                <%= sisaHari %>
+                            <span class="countdown-badge px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase transition-all duration-300" 
+                                  data-expire="<%= exp %>">
+                                CALC...
                             </span>
                         </div>
                     </div>
@@ -197,6 +191,46 @@
 
     <script>
         let currentTab = 'baru';
+
+        function updateCountdowns() {
+            document.querySelectorAll('.countdown-badge').forEach(badge => {
+                const expire = badge.dataset.expire;
+                if (expire === 'PERMANENT' || expire === 'permanen') {
+                    badge.innerText = 'PERMANEN';
+                    badge.className = 'countdown-badge px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase bg-success/20 text-success';
+                    return;
+                }
+
+                const expireTime = parseInt(expire);
+                if (isNaN(expireTime)) {
+                    badge.innerText = 'UNKNOWN';
+                    return;
+                }
+
+                const now = Date.now();
+                const diff = expireTime - now;
+
+                if (diff <= 0) {
+                    badge.innerText = 'EXPIRED';
+                    badge.className = 'countdown-badge px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase bg-danger text-white';
+                } else {
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+                    let timeStr = "";
+                    if (days > 0) timeStr += days + "D ";
+                    timeStr += `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    
+                    badge.innerText = timeStr;
+                    badge.className = 'countdown-badge px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase bg-success/20 text-success';
+                }
+            });
+        }
+
+        setInterval(updateCountdowns, 1000);
+        updateCountdowns(); // Jalankan langsung saat load
 
         function switchTab(tab) {
             currentTab = tab;
@@ -213,6 +247,7 @@
             if (tab === 'aktif') {
                 document.getElementById('section-orders').classList.add('hidden');
                 document.getElementById('section-aktif').classList.remove('hidden');
+                updateCountdowns(); // Refresh countdown saat pindah tab
             } else {
                 document.getElementById('section-orders').classList.remove('hidden');
                 document.getElementById('section-aktif').classList.add('hidden');
