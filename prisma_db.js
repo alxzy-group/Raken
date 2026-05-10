@@ -98,6 +98,29 @@ async function getAllOrders() {
     }
 }
 
+async function updateGroupInfo(data) {
+    try {
+        const { orderId, name, photo, jid } = data;
+        return await prisma.group.upsert({
+            where: { orderId: orderId },
+            update: {
+                name: name,
+                photo: photo,
+                jid: jid
+            },
+            create: {
+                orderId: orderId,
+                name: name,
+                photo: photo,
+                jid: jid
+            }
+        });
+    } catch (error) {
+        console.error('Prisma updateGroupInfo error:', error);
+        throw error;
+    }
+}
+
 async function syncActiveGroups(groups, jenisBot) {
     try {
         // We upsert each group in the list
