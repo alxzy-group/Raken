@@ -229,6 +229,20 @@ app.post('/api/orders/update', async (req, res) => {
     }
 });
 
+app.post('/api/groups/update', async (req, res) => {
+    try {
+        const { orderId, name, photo, jid } = req.body;
+        if (!orderId) {
+            return res.status(400).json({ error: 'Missing orderId' });
+        }
+        await prismaDb.updateGroupInfo({ orderId, name, photo, jid });
+        res.json({ success: true });
+    } catch (e) {
+        console.error('API Group Update Error:', e);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 app.post('/api/groups/sync', async (req, res) => {
     try {
         const { groups, jenis_bot } = req.body;
