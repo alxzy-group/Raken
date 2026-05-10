@@ -40,116 +40,197 @@
     <main class="relative z-10 max-w-7xl mx-auto px-6 py-12">
         <div class="flex items-center justify-between mb-10">
             <div>
-                <h1 class="text-3xl font-bold text-white mb-2">Daftar Pesanan</h1>
-                <p class="text-gray-400">Kelola semua transaksi dan informasi grup.</p>
+                <h1 class="text-3xl font-bold text-white mb-2">Admin Panel</h1>
+                <p class="text-gray-400">Kelola pesanan dan pantau grup aktif secara real-time.</p>
             </div>
-            <div class="bg-surface border border-border px-4 py-2 rounded-xl text-sm">
-                Total: <span class="text-accent font-bold"><%= orders.length %></span>
+            <div class="flex gap-4">
+                <div class="bg-surface border border-border px-4 py-2 rounded-xl text-sm">
+                    Orders: <span class="text-accent font-bold"><%= orders.length %></span>
+                </div>
+                <div class="bg-surface border border-border px-4 py-2 rounded-xl text-sm">
+                    Groups: <span class="text-success font-bold"><%= activeGroups.length %></span>
+                </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-6">
-            <% if (orders.length === 0) { %>
-                <div class="text-center py-20 bg-surface rounded-3xl border border-border">
-                    <p class="text-gray-500 italic">Belum ada pesanan.</p>
-                </div>
-            <% } %>
+        <!-- Filter & Tabs -->
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8 bg-surface/50 p-4 rounded-2xl border border-border">
+            <div class="flex bg-base p-1 rounded-xl border border-border w-full md:w-auto">
+                <button onclick="switchTab('baru')" id="btn-baru" class="tab-btn flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-semibold transition-all bg-accent text-white">Sewa Baru</button>
+                <button onclick="switchTab('perpanjang')" id="btn-perpanjang" class="tab-btn flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-white">Perpanjang</button>
+                <button onclick="switchTab('aktif')" id="btn-aktif" class="tab-btn flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-semibold transition-all text-gray-400 hover:text-white">Semua Grup</button>
+            </div>
+            
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <span class="text-sm text-gray-500 font-medium">Filter Bot:</span>
+                <select id="botFilter" onchange="applyFilters()" class="flex-grow md:flex-none bg-base border border-border text-white text-sm rounded-xl px-4 py-2.5 outline-none focus:border-accent transition-colors">
+                    <option value="all">Semua Jenis</option>
+                    <option value="store">Store Bot</option>
+                    <option value="v3">V3 Bot</option>
+                    <option value="guild">Guild Bot</option>
+                    <option value="cc">CC Bot</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tab Content: Baru & Perpanjang -->
+        <div id="section-orders" class="grid grid-cols-1 gap-4">
             <% orders.forEach(order => { %>
-                <div class="order-card p-6 rounded-2xl flex flex-col md:flex-row gap-6">
+                <div class="order-item order-card p-6 rounded-2xl flex flex-col md:flex-row gap-6" 
+                     data-tipe="<%= order.tipe_order %>" 
+                     data-bot="<%= order.jenis_bot.toLowerCase() %>">
                     <div class="flex-shrink-0">
                         <% if (order.group && order.group.photo) { %>
-                            <img src="<%= order.group.photo %>" alt="PP" class="w-24 h-24 rounded-2xl object-cover border border-border">
+                            <img src="<%= order.group.photo %>" alt="PP" class="w-20 h-20 rounded-2xl object-cover border border-border shadow-lg">
                         <% } else { %>
-                            <div class="w-24 h-24 rounded-2xl bg-surface border border-border flex items-center justify-center text-gray-600">
-                                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <div class="w-20 h-20 rounded-2xl bg-surface border border-border flex items-center justify-center text-gray-600">
+                                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             </div>
                         <% } %>
                     </div>
                     
                     <div class="flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Customer & Group</span>
-                            <div class="text-white font-semibold truncate text-sm md:text-base"><%= order.email %></div>
-                            <div class="text-accent text-sm font-medium mt-1 truncate"><%= order.group ? order.group.name : 'Bot belum join' %></div>
-                            <div class="mt-2 flex gap-2">
-                                <a href="<%= order.link_group %>" target="_blank" class="text-[10px] bg-surface border border-border px-2 py-1 rounded hover:border-accent transition-all">Link Grup</a>
+                            <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Customer</span>
+                            <div class="text-white font-bold truncate text-sm"><%= order.email %></div>
+                            <div class="text-accent text-xs font-semibold mt-1 truncate"><%= order.group ? order.group.name : 'Menunggu Bot Join...' %></div>
+                            <div class="mt-3 flex gap-2">
+                                <a href="<%= order.link_group %>" target="_blank" class="text-[10px] bg-accent/10 text-accent border border-accent/20 px-2 py-1 rounded font-bold hover:bg-accent hover:text-white transition-all">Link Grup</a>
                                 <% if (order.group && order.group.jid) { %>
-                                    <span class="text-[10px] text-gray-500 font-mono self-center"><%= order.group.jid %></span>
+                                    <span class="text-[9px] text-gray-500 font-mono self-center px-2 py-1 bg-surface rounded"><%= order.group.jid %></span>
                                 <% } %>
                             </div>
                         </div>
 
                         <div>
-                            <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Paket & Status</span>
-                            <div class="text-gray-200 text-sm"><%= order.jenis_bot.toUpperCase() %> - <%= order.paket %> (<%= order.durasi_hari %> Hari)</div>
-                            <div class="mt-2 flex items-center gap-2">
-                                <span class="px-2 py-1 rounded text-[10px] font-bold uppercase
+                            <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Detail Sewa</span>
+                            <div class="text-gray-200 text-xs font-medium"><%= order.jenis_bot.toUpperCase() %> - <%= order.paket %></div>
+                            <div class="text-gray-500 text-[10px] mt-0.5"><%= order.durasi_hari %> Hari</div>
+                            <div class="mt-3 flex items-center gap-2">
+                                <span class="px-2 py-1 rounded text-[9px] font-black uppercase
                                     <%= order.status === 'PAID' ? 'bg-blue-500/10 text-blue-500' : 
                                        order.status === 'COMPLETED' ? 'bg-success/10 text-success' : 
                                        order.status === 'PENDING' ? 'bg-warning/10 text-warning' : 
                                        order.status === 'ERROR' ? 'bg-danger/10 text-danger' : 'bg-gray-800 text-gray-400' %>">
                                     <%= order.status %>
                                 </span>
-                                <span class="text-[10px] text-gray-600 font-mono"><%= order.id %></span>
+                                <span class="text-[9px] text-gray-600 font-mono"><%= order.id %></span>
                             </div>
                         </div>
 
-                        <div class="flex flex-col justify-between">
+                        <div class="flex flex-col justify-between md:text-right">
                             <div>
-                                <span class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Waktu Pesan</span>
-                                <div class="text-gray-300 text-xs"><%= new Date(order.created_at).toLocaleString('id-ID') %></div>
+                                <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Waktu</span>
+                                <div class="text-gray-400 text-[11px]"><%= new Date(order.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) %></div>
                             </div>
-                            <div class="text-right text-xl font-bold text-white">
+                            <div class="text-xl font-black text-white mt-2">
                                 Rp <%= order.harga.toLocaleString('id-ID') %>
                             </div>
                         </div>
                     </div>
                 </div>
             <% }) %>
-        </div>
-
-        <!-- Section: Active Rentals Synced from Bots -->
-        <div class="flex items-center justify-between mt-20 mb-10">
-            <div>
-                <h1 class="text-3xl font-bold text-white mb-2">Sewa Aktif (Sync dari Bot)</h1>
-                <p class="text-gray-400">Daftar semua grup yang sedang menyewa bot saat ini.</p>
-            </div>
-            <div class="bg-surface border border-border px-4 py-2 rounded-xl text-sm">
-                Total: <span class="text-accent font-bold"><%= activeGroups.length %></span>
+            <div id="no-orders" class="hidden text-center py-20 bg-surface rounded-3xl border border-border">
+                <p class="text-gray-500 italic">Tidak ada pesanan ditemukan.</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <% if (activeGroups.length === 0) { %>
-                <div class="col-span-full text-center py-20 bg-surface rounded-3xl border border-border">
-                    <p class="text-gray-500 italic">Belum ada data sewa aktif dari bot.</p>
-                </div>
-            <% } %>
+        <!-- Tab Content: Semua Grup Aktif -->
+        <div id="section-aktif" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <% activeGroups.forEach(group => { %>
-                <div class="order-card p-5 rounded-2xl flex gap-4">
-                    <% if (group.photo) { %>
-                        <img src="<%= group.photo %>" alt="PP" class="w-16 h-16 rounded-xl object-cover border border-border">
-                    <% } else { %>
-                        <div class="w-16 h-16 rounded-xl bg-surface border border-border flex items-center justify-center text-gray-600 flex-shrink-0">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                        </div>
-                    <% } %>
+                <div class="active-item order-card p-5 rounded-2xl flex gap-4" data-bot="<%= group.jenisBot.toLowerCase() %>">
+                    <div class="flex-shrink-0">
+                        <% if (group.photo) { %>
+                            <img src="<%= group.photo %>" alt="PP" class="w-14 h-14 rounded-xl object-cover border border-border">
+                        <% } else { %>
+                            <div class="w-14 h-14 rounded-xl bg-surface border border-border flex items-center justify-center text-gray-600">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                        <% } %>
+                    </div>
                     <div class="flex-grow min-w-0 flex flex-col justify-center">
-                        <div class="text-white font-semibold truncate text-sm"><%= group.name || 'Unnamed Group' %></div>
+                        <div class="text-white font-bold truncate text-sm"><%= group.name || 'Unnamed Group' %></div>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-accent/10 text-accent">
+                            <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase bg-accent/10 text-accent">
                                 <%= group.jenisBot.toUpperCase() %>
                             </span>
-                            <span class="text-[9px] text-gray-500 font-mono truncate max-w-[100px]"><%= group.jid %></span>
+                            <span class="text-[9px] text-gray-500 font-mono truncate max-w-[80px]"><%= group.jid %></span>
                         </div>
-                        <div class="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Exp: <%= group.expiredAt === 'PERMANENT' ? 'PERMANEN' : (isNaN(new Date(group.expiredAt)) ? group.expiredAt : new Date(group.expiredAt).toLocaleDateString('id-ID')) %>
+                        <div class="text-[9px] text-gray-400 mt-2 flex items-center gap-1">
+                            <svg class="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Exp: <span class="font-medium">
+                                <% 
+                                    let exp = group.expiredAt;
+                                    if (exp === 'PERMANENT' || exp === 'permanen') {
+                                %>
+                                    PERMANEN
+                                <% } else if (!isNaN(exp) && exp !== null) { %>
+                                    <%= new Date(parseInt(exp)).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) %>
+                                <% } else { %>
+                                    <%= exp %>
+                                <% } %>
+                            </span>
                         </div>
                     </div>
                 </div>
             <% }) %>
+            <div id="no-aktif" class="hidden col-span-full text-center py-20 bg-surface rounded-3xl border border-border">
+                <p class="text-gray-500 italic">Tidak ada grup aktif ditemukan.</p>
+            </div>
         </div>
     </main>
+
+    <script>
+        let currentTab = 'baru';
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update UI Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-accent', 'text-white');
+                btn.classList.add('text-gray-400');
+            });
+            document.getElementById('btn-' + tab).classList.add('bg-accent', 'text-white');
+            document.getElementById('btn-' + tab).classList.remove('text-gray-400');
+
+            // Toggle Sections
+            if (tab === 'aktif') {
+                document.getElementById('section-orders').classList.add('hidden');
+                document.getElementById('section-aktif').classList.remove('hidden');
+            } else {
+                document.getElementById('section-orders').classList.remove('hidden');
+                document.getElementById('section-aktif').classList.add('hidden');
+            }
+
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const botFilter = document.getElementById('botFilter').value;
+            let visibleCount = 0;
+
+            if (currentTab === 'aktif') {
+                document.querySelectorAll('.active-item').forEach(item => {
+                    const matchBot = botFilter === 'all' || item.dataset.bot === botFilter;
+                    item.style.display = matchBot ? 'flex' : 'none';
+                    if (matchBot) visibleCount++;
+                });
+                document.getElementById('no-aktif').classList.toggle('hidden', visibleCount > 0);
+            } else {
+                document.querySelectorAll('.order-item').forEach(item => {
+                    const matchTipe = item.dataset.tipe === currentTab;
+                    const matchBot = botFilter === 'all' || item.dataset.bot === botFilter;
+                    const isVisible = matchTipe && matchBot;
+                    item.style.display = isVisible ? 'flex' : 'none';
+                    if (isVisible) visibleCount++;
+                });
+                document.getElementById('no-orders').classList.toggle('hidden', visibleCount > 0);
+            }
+        }
+
+        // Initialize
+        window.onload = () => switchTab('baru');
+    </script>
 </body>
 </html>
