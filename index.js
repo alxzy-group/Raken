@@ -9,6 +9,13 @@ const config = require('./config');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Bot API Cache Configuration
+let apiCache = {
+    orders: new Map(),
+    lastUpdate: 0
+};
+const CACHE_TTL = 5000; // 5 seconds cache
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -182,13 +189,29 @@ app.get('/status/:id', async (req, res) => {
 app.get('/api/orders', async (req, res) => {
     try {
         const { jenis_bot } = req.query;
+        const cacheKey = jenis_bot || 'all';
+        const now = Date.now();
+
+        // Check if valid cache exists
+        if (apiCache.orders.has(cacheKey) && (now - apiCache.lastUpdate < CACHE_TTL)) {
+            if (global.debug) console.log(`[CACHE HIT] Returning cached orders for ${cacheKey}`);
+            return res.json(apiCache.orders.get(cacheKey));
+        }
+
         let filters = null;
         if (jenis_bot) {
             filters = jenis_bot.split(',');
         }
+        
         const orders = await prismaDb.getPendingOrders(filters);
+        
+        // Update cache
+        apiCache.orders.set(cacheKey, orders);
+        apiCache.lastUpdate = now;
+
         res.json(orders);
     } catch (e) {
+        console.error('API Orders Error:', e);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
