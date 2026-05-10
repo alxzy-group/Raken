@@ -159,19 +159,31 @@
                             </span>
                             <span class="text-[9px] text-gray-500 font-mono truncate max-w-[80px]"><%= group.jid %></span>
                         </div>
-                        <div class="text-[9px] text-gray-400 mt-2 flex items-center gap-1">
-                            <svg class="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Exp: <span class="font-medium">
-                                <% 
-                                    let exp = group.expiredAt;
-                                    if (exp === 'PERMANENT' || exp === 'permanen') {
-                                %>
-                                    PERMANEN
-                                <% } else if (!isNaN(exp) && exp !== null) { %>
-                                    <%= new Date(parseInt(exp)).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) %>
-                                <% } else { %>
-                                    <%= exp %>
-                                <% } %>
+                        <div class="text-[9px] text-gray-400 mt-2 flex items-center gap-2">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Exp: <span class="font-medium">
+                                    <% 
+                                        let exp = group.expiredAt;
+                                        let sisaHari = "";
+                                        if (exp === 'PERMANENT' || exp === 'permanen') {
+                                            sisaHari = "PERMANEN";
+                                    %>
+                                        PERMANEN
+                                    <% } else if (!isNaN(exp) && exp !== null) { 
+                                            let diff = parseInt(exp) - Date.now();
+                                            let days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                                            sisaHari = days <= 0 ? "EXPIRED" : days + " HARI";
+                                    %>
+                                        <%= new Date(parseInt(exp)).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) %>
+                                    <% } else { %>
+                                        <%= exp %>
+                                    <% } %>
+                                </span>
+                            </div>
+                            <span class="px-1.5 py-0.5 rounded-[4px] text-[8px] font-black uppercase 
+                                <%= sisaHari === 'EXPIRED' ? 'bg-danger text-white' : 'bg-success/20 text-success' %>">
+                                <%= sisaHari %>
                             </span>
                         </div>
                     </div>
