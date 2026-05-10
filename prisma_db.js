@@ -123,19 +123,19 @@ async function updateGroupInfo(data) {
 
 async function syncActiveGroups(groups, jenisBot) {
     try {
-        // 1. Cleanup legacy categories to avoid double counts
+        // 1. Cleanup legacy categories to avoid double counts (handling case sensitivity)
         if (jenisBot === 'guild') {
             await prisma.activeGroup.deleteMany({
-                where: { jenisBot: { in: ['v3', 'guild'] } }
+                where: { jenisBot: { in: ['v3', 'V3', 'guild', 'GUILD'] } }
             });
         } else if (jenisBot === 'cc') {
             await prisma.activeGroup.deleteMany({
-                where: { jenisBot: { in: ['v4', 'cc'] } }
+                where: { jenisBot: { in: ['v4', 'V4', 'cc', 'CC'] } }
             });
         } else {
             // Standard cleanup for other types (e.g. store)
             await prisma.activeGroup.deleteMany({
-                where: { jenisBot: jenisBot }
+                where: { jenisBot: { in: [jenisBot, jenisBot.toLowerCase(), jenisBot.toUpperCase()] } }
             });
         }
 
