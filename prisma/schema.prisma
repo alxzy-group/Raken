@@ -38,14 +38,14 @@ model Group {
 }
 
 model ActiveGroup {
-  id          String   @id @default(uuid())
+  id          Int      @id @default(autoincrement())
   jid         String
+  jenisBot    String
   name        String?
   photo       String?
   expiredAt   String?
-  jenisBot    String
+  memberCount Int?     @default(0)
   updatedAt   DateTime @updatedAt
 
   @@unique([jid, jenisBot])
 }
-

@@ -146,7 +146,8 @@ async function syncActiveGroups(groups, jenisBot) {
                 jenisBot: jenisBot,
                 name: group.name,
                 photo: group.photo,
-                expiredAt: group.expiredAt
+                expiredAt: group.expiredAt,
+                memberCount: group.memberCount || 0
             }));
 
             await prisma.activeGroup.createMany({
