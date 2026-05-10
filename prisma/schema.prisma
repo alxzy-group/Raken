@@ -37,3 +37,15 @@ model Group {
   order       Order    @relation(fields: [orderId], references: [id])
 }
 
+model ActiveGroup {
+  id          String   @id @default(uuid())
+  jid         String
+  name        String?
+  photo       String?
+  expiredAt   String?
+  jenisBot    String
+  updatedAt   DateTime @updatedAt
+
+  @@unique([jid, jenisBot])
+}
+

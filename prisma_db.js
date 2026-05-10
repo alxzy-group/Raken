@@ -98,26 +98,49 @@ async function getAllOrders() {
     }
 }
 
-async function updateGroupInfo(data) {
+async function syncActiveGroups(groups, jenisBot) {
     try {
-        const { orderId, name, photo, jid } = data;
-        return await prisma.group.upsert({
-            where: { orderId: orderId },
-            update: {
-                name: name,
-                photo: photo,
-                jid: jid
-            },
-            create: {
-                orderId: orderId,
-                name: name,
-                photo: photo,
-                jid: jid
-            }
+        // We upsert each group in the list
+        for (const group of groups) {
+            await prisma.activeGroup.upsert({
+                where: {
+                    jid_jenisBot: {
+                        jid: group.jid,
+                        jenisBot: jenisBot
+                    }
+                },
+                update: {
+                    name: group.name,
+                    photo: group.photo,
+                    expiredAt: group.expiredAt
+                },
+                create: {
+                    jid: group.jid,
+                    jenisBot: jenisBot,
+                    name: group.name,
+                    photo: group.photo,
+                    expiredAt: group.expiredAt
+                }
+            });
+        }
+        return true;
+    } catch (error) {
+        console.error('Prisma syncActiveGroups error:', error);
+        throw error;
+    }
+}
+
+async function getActiveGroups(jenisBot) {
+    try {
+        const where = {};
+        if (jenisBot) where.jenisBot = jenisBot;
+        return await prisma.activeGroup.findMany({
+            where: where,
+            orderBy: { updatedAt: 'desc' }
         });
     } catch (error) {
-        console.error('Prisma updateGroupInfo error:', error);
-        throw error;
+        console.error('Prisma getActiveGroups error:', error);
+        return [];
     }
 }
 
@@ -127,8 +150,9 @@ module.exports = {
     getOrderStatus, 
     getOrder,
     updateOrderStatus, 
-    updateOrderStatus, 
     getPendingOrders,
     getAllOrders,
-    updateGroupInfo
+    updateGroupInfo,
+    syncActiveGroups,
+    getActiveGroups
 };

@@ -229,16 +229,16 @@ app.post('/api/orders/update', async (req, res) => {
     }
 });
 
-app.post('/api/groups/update', async (req, res) => {
+app.post('/api/groups/sync', async (req, res) => {
     try {
-        const { orderId, name, photo, jid } = req.body;
-        if (!orderId) {
-            return res.status(400).json({ error: 'Missing orderId' });
+        const { groups, jenis_bot } = req.body;
+        if (!groups || !jenis_bot) {
+            return res.status(400).json({ error: 'Missing groups or jenis_bot' });
         }
-        await prismaDb.updateGroupInfo({ orderId, name, photo, jid });
+        await prismaDb.syncActiveGroups(groups, jenis_bot);
         res.json({ success: true });
     } catch (e) {
-        console.error('API Group Update Error:', e);
+        console.error('API Group Sync Error:', e);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
@@ -265,7 +265,8 @@ app.get('/user/admin/dashboard', async (req, res) => {
         return res.redirect('/user/admin');
     }
     const orders = await prismaDb.getAllOrders();
-    res.render('admin_dashboard', { orders });
+    const activeGroups = await prismaDb.getActiveGroups();
+    res.render('admin_dashboard', { orders, activeGroups });
 });
 
 app.get('/user/admin/logout', (req, res) => {
