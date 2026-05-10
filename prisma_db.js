@@ -123,10 +123,21 @@ async function updateGroupInfo(data) {
 
 async function syncActiveGroups(groups, jenisBot) {
     try {
-        // 1. Delete old data for this bot type to ensure real-time sync
-        await prisma.activeGroup.deleteMany({
-            where: { jenisBot: jenisBot }
-        });
+        // 1. Cleanup legacy categories to avoid double counts
+        if (jenisBot === 'guild') {
+            await prisma.activeGroup.deleteMany({
+                where: { jenisBot: { in: ['v3', 'guild'] } }
+            });
+        } else if (jenisBot === 'cc') {
+            await prisma.activeGroup.deleteMany({
+                where: { jenisBot: { in: ['v4', 'cc'] } }
+            });
+        } else {
+            // Standard cleanup for other types (e.g. store)
+            await prisma.activeGroup.deleteMany({
+                where: { jenisBot: jenisBot }
+            });
+        }
 
         // 2. Insert the latest data from the bot
         if (groups.length > 0) {
