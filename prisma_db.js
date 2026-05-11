@@ -123,36 +123,68 @@ async function updateGroupInfo(data) {
 
 async function syncActiveGroups(groups, jenisBot) {
     try {
-        // 1. Cleanup legacy categories to avoid double counts (handling case sensitivity)
+        const jidsInRequest = groups.map(g => g.jid);
+
+        // 1. Cleanup legacy categories if needed
         if (jenisBot === 'guild') {
-            await prisma.activeGroup.deleteMany({
-                where: { jenisBot: { in: ['v3', 'V3', 'guild', 'GUILD'] } }
-            });
+            await prisma.activeGroup.deleteMany({ where: { jenisBot: { in: ['v3', 'V3'] } } });
         } else if (jenisBot === 'cc') {
-            await prisma.activeGroup.deleteMany({
-                where: { jenisBot: { in: ['v4', 'V4', 'cc', 'CC'] } }
-            });
-        } else {
-            // Standard cleanup for other types (e.g. store)
-            await prisma.activeGroup.deleteMany({
-                where: { jenisBot: { in: [jenisBot, jenisBot.toLowerCase(), jenisBot.toUpperCase()] } }
-            });
+            await prisma.activeGroup.deleteMany({ where: { jenisBot: { in: ['v4', 'V4'] } } });
         }
 
-        // 2. Insert the latest data from the bot
-        if (groups.length > 0) {
-            const dataToInsert = groups.map(group => ({
-                jid: group.jid,
+        // 2. Delete groups that are no longer in the bot's rental list
+        await prisma.activeGroup.deleteMany({
+            where: {
                 jenisBot: jenisBot,
-                name: group.name,
-                photo: group.photo,
-                expiredAt: group.expiredAt,
-                memberCount: group.memberCount || 0
-            }));
+                jid: { notIn: jidsInRequest }
+            }
+        });
 
-            await prisma.activeGroup.createMany({
-                data: dataToInsert
+        // 3. Process each group to avoid overwriting good metadata with defaults/nulls
+        for (const group of groups) {
+            const existing = await prisma.activeGroup.findUnique({
+                where: { 
+                    jid_jenisBot: { 
+                        jid: group.jid, 
+                        jenisBot: jenisBot 
+                    } 
+                }
             });
+
+            if (existing) {
+                // Prepare update data
+                const updateData = {
+                    expiredAt: group.expiredAt,
+                    memberCount: (group.memberCount && group.memberCount > 0) ? group.memberCount : existing.memberCount
+                };
+
+                // Only update name if it's not the default placeholder
+                if (group.name && group.name !== 'Group Tersewa' && group.name !== 'Unnamed Group') {
+                    updateData.name = group.name;
+                }
+
+                // Only update photo if it's actually provided
+                if (group.photo) {
+                    updateData.photo = group.photo;
+                }
+
+                await prisma.activeGroup.update({
+                    where: { id: existing.id },
+                    data: updateData
+                });
+            } else {
+                // New entry, create with whatever we have
+                await prisma.activeGroup.create({
+                    data: {
+                        jid: group.jid,
+                        jenisBot: jenisBot,
+                        name: group.name || 'Group Tersewa',
+                        photo: group.photo,
+                        expiredAt: group.expiredAt,
+                        memberCount: group.memberCount || 0
+                    }
+                });
+            }
         }
         return true;
     } catch (error) {
