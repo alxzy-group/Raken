@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-global.debug = false;
+global.debug = true;
 module.exports = {
     PAKASIR_KEY: process.env.PAKASIR_KEY || 'egY52Qm9D3WdeFpXoB9nipg5zFfhqDMC',
     PAKASIR_SLUG: 'ravenzena-auto-order',
