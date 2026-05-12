@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3000;
 // Bot API Cache Configuration
 let apiCache = {
     orders: new Map(),
-    lastUpdate: 0
+    lastUpdate: new Map() // Simpan lastUpdate per key
 };
 const CACHE_TTL = 5000; // 5 seconds cache
 
@@ -192,22 +192,23 @@ app.get('/api/orders', async (req, res) => {
         const cacheKey = jenis_bot || 'all';
         const now = Date.now();
 
-        // Check if valid cache exists
-        if (apiCache.orders.has(cacheKey) && (now - apiCache.lastUpdate < CACHE_TTL)) {
-            if (global.debug) console.log(`[CACHE HIT] Returning cached orders for ${cacheKey}`);
+        // Check if valid cache exists for THIS key
+        const lastUpd = apiCache.lastUpdate.get(cacheKey) || 0;
+        if (apiCache.orders.has(cacheKey) && (now - lastUpd < CACHE_TTL)) {
             return res.json(apiCache.orders.get(cacheKey));
         }
 
+        // Handle multiple bot types (e.g. jenis_bot=v3,guild)
         let filters = null;
         if (jenis_bot) {
-            filters = jenis_bot.split(',');
+            filters = jenis_bot.split(',').map(s => s.trim());
         }
         
         const orders = await prismaDb.getPendingOrders(filters);
         
         // Update cache
         apiCache.orders.set(cacheKey, orders);
-        apiCache.lastUpdate = now;
+        apiCache.lastUpdate.set(cacheKey, now);
 
         res.json(orders);
     } catch (e) {
@@ -290,6 +291,47 @@ app.get('/user/admin/logout', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`🚀 Ravenweb berjalan di http://localhost:${PORT}`);
+});
+
+// =============================================
+// BACKGROUND POLLER: Cek pembayaran PENDING ke Pakasir setiap 12 detik
+// Tidak bergantung pada browser user tetap terbuka
+// =============================================
+async function pollPendingPayments() {
+    try {
+        const pendingOrders = await prismaDb.getPendingOrders(null);
+        const onlyPending = pendingOrders.filter(o => o.status === 'PENDING' && o.payment_number !== 'DEBUG-QRIS');
+
+        if (onlyPending.length === 0) return;
+
+        console.log(`[POLLER] Mengecek ${onlyPending.length} order PENDING ke Pakasir...`);
+
+        for (const order of onlyPending) {
+            try {
+                const detail = await pakasir.getTransactionDetail(order.id, order.harga);
+                if (detail && detail.status === 'completed') {
+                    await prismaDb.updateOrderStatus(order.id, 'PAID');
+                    // Invalidate cache agar bot langsung ambil data terbaru
+                    apiCache.orders.clear();
+                    apiCache.lastUpdate.clear();
+                    console.log(`[POLLER] ✅ Order ${order.id} berhasil diupdate ke PAID.`);
+                }
+            } catch (e) {
+                // Abaikan error per-order, lanjut order berikutnya
+            }
+        }
+    } catch (e) {
+        console.error('[POLLER] Error saat polling Pakasir:', e.message);
+    }
+}
+
+// Jalankan poller setiap 12 detik
+setInterval(pollPendingPayments, 12000);
+// Jalankan sekali saat start agar tidak perlu tunggu 12 detik pertama
+pollPendingPayments();
+
+app.listen(PORT, () => {
+    console.log(`[SERVER] Running on http://localhost:${PORT}`);
 });
 
 module.exports = app;
