@@ -301,6 +301,9 @@
                                         <div>
                                             <label class="block text-sm font-medium text-gray-400 mb-2">Link Grup WhatsApp</label>
                                             <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-all">
+                                            <p class="mt-2 text-[10px] text-danger font-bold uppercase animate-pulse">
+                                                * WAJIB MATIKAN FITUR PERSETUJUAN ADMIN AGAR BOT TIDAK ERROR SAAT JOIN
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -373,6 +376,13 @@
                             <span class="w-2 h-2 rounded-full bg-warning animate-pulse"></span>
                             Menunggu pembayaran masuk...
                         </div>
+                    </div>
+
+                    <!-- Admin Approval Warning -->
+                    <div x-show="status === 'PENDING'" class="mb-8 p-4 bg-danger/10 border border-danger/20 rounded-2xl">
+                        <p class="text-[10px] md:text-xs font-black text-danger uppercase leading-relaxed text-center">
+                            ⚠️ PENTING: WAJIB MATIKAN FITUR PERSETUJUAN ADMIN GRUP AGAR BOT TIDAK ERROR SAAT JOIN ⚠️
+                        </p>
                     </div>
 
                     <div class="inline-block p-4 bg-white rounded-2xl mb-8 shadow-lg shadow-accent/10 relative">
