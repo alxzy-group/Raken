@@ -54,13 +54,103 @@ async function getOrder(orderId) {
 
 async function updateOrderStatus(orderId, status) {
     try {
-        return await prisma.order.update({
-            where: { id: orderId },
-            data: { status: status }
+        const orderBefore = await prisma.order.findUnique({
+            where: { id: orderId }
         });
+
+        const updatedOrder = await prisma.order.update({
+            where: { id: orderId },
+            data: { status: status },
+            include: { group: true }
+        });
+
+        // Pemicu notifikasi saat status diubah menjadi PAID atau COMPLETED
+        if (orderBefore && orderBefore.status !== status) {
+            if (status === 'PAID' || status === 'COMPLETED') {
+                sendTelegramNotification(updatedOrder).catch(err => {
+                    console.error('Gagal mengirim notifikasi Telegram:', err);
+                });
+            }
+        }
+
+        return updatedOrder;
     } catch (error) {
         console.error('Prisma updateOrderStatus error:', error);
         throw error;
+    }
+}
+
+async function getSetting(key) {
+    try {
+        const setting = await prisma.setting.findUnique({
+            where: { key }
+        });
+        return setting ? setting.value : null;
+    } catch (error) {
+        console.error(`Prisma getSetting error for key ${key}:`, error);
+        return null;
+    }
+}
+
+async function setSetting(key, value) {
+    try {
+        return await prisma.setting.upsert({
+            where: { key },
+            update: { value },
+            create: { key, value }
+        });
+    } catch (error) {
+        console.error(`Prisma setSetting error for key ${key}:`, error);
+        throw error;
+    }
+}
+
+async function sendTelegramNotification(order) {
+    try {
+        const botToken = await getSetting('telegram_bot_token');
+        const ownerId = await getSetting('telegram_owner_id');
+
+        if (!botToken || !ownerId) {
+            console.log('[TELEGRAM] Skip notifikasi: Bot token atau Owner ID belum dikonfigurasi.');
+            return;
+        }
+
+        const formattedHarga = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(order.harga).replace('Rp', 'Rp ').trim();
+
+        const groupName = order.group ? order.group.name : 'Menunggu Bot Join...';
+        const tipeOrderStr = order.tipe_order ? order.tipe_order.toUpperCase() : 'BARU';
+
+        // Format pesan sesuai permintaan user
+        const message = `💰 *ORDER WEB SUCCESS (${tipeOrderStr})*\n\n` +
+            `*Email:* ${order.email}\n` +
+            `*Grup:* ${groupName}\n` +
+            `*Link:* ${order.link_group}\n` +
+            `*Harga:* ${formattedHarga}\n` +
+            `*ID:* \`${order.id}\``;
+
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: ownerId,
+                text: message,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        const resData = await response.json();
+        if (response.ok && resData.ok) {
+            console.log(`[TELEGRAM] Notifikasi berhasil dikirim untuk order ${order.id}`);
+        } else {
+            console.error('[TELEGRAM] Gagal mengirim notifikasi Telegram:', resData.description || resData);
+        }
+    } catch (error) {
+        console.error('[TELEGRAM] Error sending Telegram notification:', error);
     }
 }
 
@@ -217,5 +307,8 @@ module.exports = {
     getAllOrders,
     updateGroupInfo,
     syncActiveGroups,
-    getActiveGroups
+    getActiveGroups,
+    getSetting,
+    setSetting,
+    sendTelegramNotification
 };

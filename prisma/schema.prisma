@@ -9,20 +9,31 @@ datasource db {
 }
 
 model Order {
-  id             String   @id
-  email          String
-  link_group     String
+  id             String    @id
+  status         String
+  product        Json?
+  price          Float?
+  userAccount    Json?
+  pakasir        Json?
+  serverDetails  Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+
+  // Raken-main columns
+  email          String?
+  link_group     String?
   info_group     String?
-  jenis_bot      String
-  tipe_order     String
-  paket          String
-  durasi_hari    String
-  harga          Int
+  jenis_bot      String?
+  tipe_order     String?
+  paket          String?
+  durasi_hari    String?
+  harga          Int?
   payment_number String?
   expired_at     String?
-  status         String   @default("PENDING")
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  created_at     DateTime? @default(now())
+  updated_at     DateTime? @updatedAt
+
+  // Relations
   group          Group?
 }
 
@@ -48,4 +59,67 @@ model ActiveGroup {
   updatedAt   DateTime @updatedAt
 
   @@unique([jid, jenisBot])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model AppConfig {
+  key   String @id
+  value String
+}
+
+model GroupSetting {
+  chatId    String  @id
+  antiLink  Boolean @default(false)
+  antiNSFW  Boolean @default(false)
+  antiPromo Boolean @default(false)
+  antiAdmin Boolean @default(false)
+}
+
+model NodeSpecification {
+  type     String @id
+  title    String
+  subtitle String
+  cpu      String
+  ram      String
+  disk     String
+  os       String
+  net      String
+  loc      String
+}
+
+model PanelConfig {
+  type String @id
+  url  String
+  key  String
+}
+
+model Product {
+  id         Int    @id @default(autoincrement())
+  type       String
+  name       String
+  memory     String
+  disk       String @default("0")
+  cpu        Int    @default(0)
+  price      Float
+  nestId     Int    @default(0)
+  eggId      Int    @default(0)
+  locationId Int    @default(0)
+
+  @@unique([type, name])
+}
+
+model Voucher {
+  id        Int       @id @default(autoincrement())
+  code      String    @unique
+  discount  Float
+  type      String    @default("flat")
+  maxUsage  Int       @default(1)
+  usedCount Int       @default(0)
+  expiry    DateTime?
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
 }

@@ -279,9 +279,37 @@ app.get('/user/admin/dashboard', async (req, res) => {
     if (req.cookies.admin_token !== config.ADMIN_PASSWORD) {
         return res.redirect('/user/admin');
     }
-    const orders = await prismaDb.getAllOrders();
-    const activeGroups = await prismaDb.getActiveGroups();
-    res.render('admin_dashboard', { orders, activeGroups });
+    try {
+        const orders = await prismaDb.getAllOrders();
+        const activeGroups = await prismaDb.getActiveGroups();
+        const telegramBotToken = await prismaDb.getSetting('telegram_bot_token') || '';
+        const telegramOwnerId = await prismaDb.getSetting('telegram_owner_id') || '';
+        
+        res.render('admin_dashboard', { 
+            orders, 
+            activeGroups, 
+            telegramBotToken, 
+            telegramOwnerId 
+        });
+    } catch (e) {
+        console.error('Error rendering dashboard:', e);
+        res.status(500).send('Internal Server Error');
+    }
+});
+
+app.post('/user/admin/settings', async (req, res) => {
+    if (req.cookies.admin_token !== config.ADMIN_PASSWORD) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    try {
+        const { telegramBotToken, telegramOwnerId } = req.body;
+        await prismaDb.setSetting('telegram_bot_token', telegramBotToken || '');
+        await prismaDb.setSetting('telegram_owner_id', telegramOwnerId || '');
+        res.json({ success: true });
+    } catch (e) {
+        console.error('Error saving settings:', e);
+        res.status(500).json({ success: false, message: e.message });
+    }
 });
 
 app.get('/user/admin/logout', (req, res) => {
