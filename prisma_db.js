@@ -1,5 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+
+// Use global singleton pattern to prevent duplicate PrismaClient instances in serverless/development
+const prisma = global.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== 'production') {
+    global.prisma = prisma;
+}
 
 async function addOrder(orderData) {
     try {
@@ -221,31 +226,32 @@ async function syncActiveGroups(groups, jenisBot) {
     try {
         const jidsInRequest = groups.map(g => g.jid);
 
-        // 1. Cleanup legacy categories if needed
+        // 1. Fetch all existing active groups for this jenisBot in a single query
+        const existingGroups = await prisma.activeGroup.findMany({
+            where: { jenisBot: jenisBot }
+        });
+        const existingMap = new Map(existingGroups.map(g => [g.jid, g]));
+
+        const operations = [];
+
+        // 2. Cleanup legacy categories if needed
         if (jenisBot === 'guild') {
-            await prisma.activeGroup.deleteMany({ where: { jenisBot: { in: ['v3', 'V3'] } } });
+            operations.push(prisma.activeGroup.deleteMany({ where: { jenisBot: { in: ['v3', 'V3'] } } }));
         } else if (jenisBot === 'cc') {
-            await prisma.activeGroup.deleteMany({ where: { jenisBot: { in: ['v4', 'V4'] } } });
+            operations.push(prisma.activeGroup.deleteMany({ where: { jenisBot: { in: ['v4', 'V4'] } } }));
         }
 
-        // 2. Delete groups that are no longer in the bot's rental list
-        await prisma.activeGroup.deleteMany({
+        // 3. Delete groups that are no longer in the bot's rental list
+        operations.push(prisma.activeGroup.deleteMany({
             where: {
                 jenisBot: jenisBot,
                 jid: { notIn: jidsInRequest }
             }
-        });
+        }));
 
-        // 3. Process each group to avoid overwriting good metadata with defaults/nulls
+        // 4. Build update and create operations
         for (const group of groups) {
-            const existing = await prisma.activeGroup.findUnique({
-                where: { 
-                    jid_jenisBot: { 
-                        jid: group.jid, 
-                        jenisBot: jenisBot 
-                    } 
-                }
-            });
+            const existing = existingMap.get(group.jid);
 
             if (existing) {
                 // Prepare update data
@@ -264,13 +270,13 @@ async function syncActiveGroups(groups, jenisBot) {
                     updateData.photo = group.photo;
                 }
 
-                await prisma.activeGroup.update({
+                operations.push(prisma.activeGroup.update({
                     where: { id: existing.id },
                     data: updateData
-                });
+                }));
             } else {
                 // New entry, create with whatever we have
-                await prisma.activeGroup.create({
+                operations.push(prisma.activeGroup.create({
                     data: {
                         jid: group.jid,
                         jenisBot: jenisBot,
@@ -279,9 +285,12 @@ async function syncActiveGroups(groups, jenisBot) {
                         expiredAt: group.expiredAt,
                         memberCount: group.memberCount || 0
                     }
-                });
+                }));
             }
         }
+
+        // 5. Execute all operations inside a single, highly efficient transaction
+        await prisma.$transaction(operations);
         return true;
     } catch (error) {
         console.error('Prisma syncActiveGroups error:', error);
