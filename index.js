@@ -5,9 +5,28 @@ const cookieParser = require('cookie-parser');
 const prismaDb = require('./prisma_db');
 const pakasir = require('./pakasir');
 const config = require('./config');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Cache memory to prevent duplicate/redundant active group writes
+const syncCache = new Map();
+
+function getPayloadHash(groups) {
+    if (!Array.isArray(groups)) return '';
+    // Sort by JID to make sure comparison is order-independent
+    const sorted = [...groups].sort((a, b) => (a.jid || '').localeCompare(b.jid || ''));
+    // Extract only core values that affect the database representation
+    const simplified = sorted.map(g => ({
+        jid: g.jid,
+        name: g.name,
+        expiredAt: g.expiredAt,
+        memberCount: g.memberCount,
+        photo: g.photo
+    }));
+    return crypto.createHash('md5').update(JSON.stringify(simplified)).digest('hex');
+}
 
 // Bot API Cache Configuration
 let apiCache = {
@@ -250,7 +269,21 @@ app.post('/api/groups/sync', async (req, res) => {
         if (!groups || !jenis_bot) {
             return res.status(400).json({ error: 'Missing groups or jenis_bot' });
         }
+
+        // Hitung hash payload untuk mendeteksi perubahan data grup
+        const payloadHash = getPayloadHash(groups);
+        const cacheKey = `sync_${jenis_bot}`;
+
+        if (syncCache.get(cacheKey) === payloadHash) {
+            // Jika data sama persis, langsung return sukses tanpa sentuh DB
+            return res.json({ success: true, cached: true });
+        }
+
         await prismaDb.syncActiveGroups(groups, jenis_bot);
+        
+        // Simpan hash terbaru ke memory cache
+        syncCache.set(cacheKey, payloadHash);
+        
         res.json({ success: true });
     } catch (e) {
         console.error('API Group Sync Error:', e);

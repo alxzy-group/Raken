@@ -89,7 +89,7 @@
             <% orders.forEach(order => { %>
                 <div class="order-item order-card p-6 rounded-2xl flex flex-col md:flex-row gap-6" 
                      data-tipe="<%= order.tipe_order %>" 
-                     data-bot="<%= order.jenis_bot.toLowerCase() %>">
+                     data-bot="<%= (order.jenis_bot || 'store').toLowerCase() %>">
                     <div class="flex-shrink-0">
                         <% if (order.group && order.group.photo) { %>
                             <img src="<%= order.group.photo %>" alt="PP" class="w-20 h-20 rounded-2xl object-cover border border-border shadow-lg">
@@ -112,12 +112,13 @@
                                 <% } %>
                             </div>
                         </div>
-
+ 
                         <div>
                             <span class="block text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Detail Sewa</span>
                             <div class="text-gray-200 text-xs font-medium">
-                                <%= order.jenis_bot.toLowerCase() === 'v3' || order.jenis_bot.toLowerCase() === 'guild' ? 'GUILD BOT' : 
-                                   (order.jenis_bot.toLowerCase() === 'v4' || order.jenis_bot.toLowerCase() === 'cc' ? 'CC BOT' : order.jenis_bot.toUpperCase()) %> 
+                                <% const safeBot = (order.jenis_bot || 'store').toLowerCase(); %>
+                                <%= safeBot === 'v3' || safeBot === 'guild' ? 'GUILD BOT' : 
+                                   (safeBot === 'v4' || safeBot === 'cc' ? 'CC BOT' : safeBot.toUpperCase()) %> 
                                 - <%= order.paket %>
                             </div>
                             <div class="text-gray-500 text-[10px] mt-0.5"><%= order.durasi_hari %> Hari</div>

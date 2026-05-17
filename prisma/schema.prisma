@@ -3,19 +3,18 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 model Order {
   id             String    @id
   status         String
-  product        Json?
+  product        String?
   price          Float?
-  userAccount    Json?
-  pakasir        Json?
-  serverDetails  Json?
+  userAccount    String?
+  pakasir        String?
+  serverDetails  String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime? @updatedAt
 

@@ -1,26 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
 
-// Automatically patch DATABASE_URL to use direct connection (port 5432) and enforce pool limit in serverless
-if (process.env.DATABASE_URL) {
-    let url = process.env.DATABASE_URL;
-    
-    // Bypassing PgBouncer (port 6543) by routing straight to the database port (5432)
-    if (url.includes(':6543/')) {
-        url = url.replace(':6543/', ':5432/');
-    }
-    url = url.replace('pgbouncer=true', '');
-    
-    // Enforcing safe connection pool limit
-    if (!url.includes('connection_limit=')) {
-        const separator = url.includes('?') ? '&' : '?';
-        url = `${url}${separator}connection_limit=2`;
-    }
-    
-    // Clean up potential double delimiters
-    url = url.replace('?&', '?').replace('&&', '&');
-    process.env.DATABASE_URL = url;
-}
-
 // Use global singleton pattern to prevent duplicate PrismaClient instances in serverless/development
 const prisma = global.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') {
@@ -275,26 +254,45 @@ async function syncActiveGroups(groups, jenisBot) {
             const existing = existingMap.get(group.jid);
 
             if (existing) {
-                // Prepare update data
-                const updateData = {
-                    expiredAt: group.expiredAt,
-                    memberCount: (group.memberCount && group.memberCount > 0) ? group.memberCount : existing.memberCount
-                };
+                let hasChanged = false;
+                const updateData = {};
 
-                // Only update name if it's not the default placeholder
+                // Compare expiredAt (handle both string formats and Date objects safely)
+                const existingTime = existing.expiredAt ? new Date(existing.expiredAt).getTime() : 0;
+                const incomingTime = group.expiredAt ? new Date(group.expiredAt).getTime() : 0;
+                if (existingTime !== incomingTime) {
+                    updateData.expiredAt = group.expiredAt;
+                    hasChanged = true;
+                }
+
+                // Compare memberCount
+                const newMemberCount = (group.memberCount && group.memberCount > 0) ? group.memberCount : existing.memberCount;
+                if (newMemberCount !== existing.memberCount) {
+                    updateData.memberCount = newMemberCount;
+                    hasChanged = true;
+                }
+
+                // Compare name (avoid overwriting custom values with defaults)
                 if (group.name && group.name !== 'Group Tersewa' && group.name !== 'Unnamed Group') {
-                    updateData.name = group.name;
+                    if (group.name !== existing.name) {
+                        updateData.name = group.name;
+                        hasChanged = true;
+                    }
                 }
 
-                // Only update photo if it's actually provided
-                if (group.photo) {
+                // Compare photo
+                if (group.photo && group.photo !== existing.photo) {
                     updateData.photo = group.photo;
+                    hasChanged = true;
                 }
 
-                operations.push(prisma.activeGroup.update({
-                    where: { id: existing.id },
-                    data: updateData
-                }));
+                // Only append update operation if there are actual, concrete changes
+                if (hasChanged) {
+                    operations.push(prisma.activeGroup.update({
+                        where: { id: existing.id },
+                        data: updateData
+                    }));
+                }
             } else {
                 // New entry, create with whatever we have
                 operations.push(prisma.activeGroup.create({
