@@ -124,9 +124,15 @@ async function sendTelegramNotification(order) {
         const groupName = order.group ? order.group.name : 'Menunggu Bot Join...';
         const tipeOrderStr = order.tipe_order ? order.tipe_order.toUpperCase() : 'BARU';
 
+        let jenisBotStr = order.jenis_bot ? order.jenis_bot.toLowerCase() : 'store';
+        if (jenisBotStr === 'v3') jenisBotStr = 'guild';
+        if (jenisBotStr === 'v4') jenisBotStr = 'cc';
+        jenisBotStr = jenisBotStr.toUpperCase();
+
         // Format pesan sesuai permintaan user
         const message = `💰 *ORDER WEB SUCCESS (${tipeOrderStr})*\n\n` +
             `*Email:* ${order.email}\n` +
+            `*Jenis Bot:* ${jenisBotStr}\n` +
             `*Grup:* ${groupName}\n` +
             `*Link:* ${order.link_group}\n` +
             `*Harga:* ${formattedHarga}\n` +
