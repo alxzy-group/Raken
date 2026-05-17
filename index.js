@@ -279,6 +279,9 @@ app.get('/user/admin/dashboard', async (req, res) => {
     if (req.cookies.admin_token !== config.ADMIN_PASSWORD) {
         return res.redirect('/user/admin');
     }
+    // Trigger update pembayaran pending secara non-blocking saat admin membuka dashboard
+    pollPendingPayments().catch(err => console.error('[POLLER] Dashboard poll error:', err));
+
     try {
         const orders = await prismaDb.getAllOrders();
         const activeGroups = await prismaDb.getActiveGroups();
@@ -353,10 +356,19 @@ async function pollPendingPayments() {
     }
 }
 
-// Jalankan poller setiap 12 detik
-setInterval(pollPendingPayments, 12000);
-// Jalankan sekali saat start agar tidak perlu tunggu 12 detik pertama
-pollPendingPayments();
+// Deteksi lingkungan serverless/Vercel secara sangat tangguh
+const isServerless = !!(
+    process.env.VERCEL ||
+    process.env.LAMBDA_TASK_ROOT ||
+    process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.env.NOW_REGION
+);
+
+// Jalankan poller setiap 12 detik hanya jika bukan di lingkungan Vercel serverless
+if (!isServerless) {
+    setInterval(pollPendingPayments, 12000);
+    pollPendingPayments().catch(err => console.error('[POLLER] Initial poll error:', err));
+}
 
 app.listen(PORT, () => {
     console.log(`[SERVER] Running on http://localhost:${PORT}`);

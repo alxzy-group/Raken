@@ -1,11 +1,24 @@
 const { PrismaClient } = require('@prisma/client');
 
-// Automatically patch DATABASE_URL to enforce connection_limit=1 in serverless environments
+// Automatically patch DATABASE_URL to use direct connection (port 5432) and enforce pool limit in serverless
 if (process.env.DATABASE_URL) {
-    if (!process.env.DATABASE_URL.includes('connection_limit=')) {
-        const separator = process.env.DATABASE_URL.includes('?') ? '&' : '?';
-        process.env.DATABASE_URL = `${process.env.DATABASE_URL}${separator}connection_limit=1`;
+    let url = process.env.DATABASE_URL;
+    
+    // Bypassing PgBouncer (port 6543) by routing straight to the database port (5432)
+    if (url.includes(':6543/')) {
+        url = url.replace(':6543/', ':5432/');
     }
+    url = url.replace('pgbouncer=true', '');
+    
+    // Enforcing safe connection pool limit
+    if (!url.includes('connection_limit=')) {
+        const separator = url.includes('?') ? '&' : '?';
+        url = `${url}${separator}connection_limit=2`;
+    }
+    
+    // Clean up potential double delimiters
+    url = url.replace('?&', '?').replace('&&', '&');
+    process.env.DATABASE_URL = url;
 }
 
 // Use global singleton pattern to prevent duplicate PrismaClient instances in serverless/development
