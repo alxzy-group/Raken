@@ -1,5 +1,13 @@
 const { PrismaClient } = require('@prisma/client');
 
+// Automatically patch DATABASE_URL to enforce connection_limit=1 in serverless environments
+if (process.env.DATABASE_URL) {
+    if (!process.env.DATABASE_URL.includes('connection_limit=')) {
+        const separator = process.env.DATABASE_URL.includes('?') ? '&' : '?';
+        process.env.DATABASE_URL = `${process.env.DATABASE_URL}${separator}connection_limit=1`;
+    }
+}
+
 // Use global singleton pattern to prevent duplicate PrismaClient instances in serverless/development
 const prisma = global.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== 'production') {
