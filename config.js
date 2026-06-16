@@ -6,7 +6,7 @@ module.exports = {
     PAKASIR_SLUG: 'ravenzena-auto-order',
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',
     CONTACT_OWNER: [
-        { type: 'whatsapp', id: '6282288978160', name: 'Raken Store' },
+        { type: 'whatsapp', id: '6285147084529', name: 'Raken Store' },
         { type: 'whatsapp', id: '6285658762303', name: 'Venn Store' },
         { type: 'whatsapp', id: '6283180602352', name: 'Zize Store' },
         { type: 'whatsapp', id: '6281949574876', name: 'Nayla Store' }
@@ -18,16 +18,13 @@ module.exports = {
             'paket3': { nama: '2 Bulan', harga: 18000, hari: 60 }
         },
         v3: {
-            'paket1': { nama: '1 Minggu', harga: 7000, hari: 7 },
-            'paket2': { nama: '1 Bulan', harga: 15000, hari: 30 },
-            'paket3': { nama: '2 Bulan', harga: 23000, hari: 60 },
-            'paket4': { nama: '3 Bulan', harga: 30000, hari: 90 },
-            'paket5': { nama: '4 Bulan', harga: 50000, hari: 120 }
+            'paket1': { nama: '1 Bulan', harga: 18000, hari: 30 },
+            'paket2': { nama: '2 Bulan', harga: 27000, hari: 60 },
+            'paket3': { nama: '3 Bulan', harga: 35000, hari: 90 }
         },
         cc: {
-            'paket1': { nama: '1 Minggu', harga: 6000, hari: 7 },
-            'paket2': { nama: '1 Bulan', harga: 13000, hari: 30 },
-            'paket3': { nama: '2 Bulan', harga: 21000, hari: 60 }
+            'paket1': { nama: '1 Bulan', harga: 15000, hari: 30 },
+            'paket2': { nama: '2 Bulan', harga: 25000, hari: 60 }
         }
     },
     INFO_GROUP_LINK: {
