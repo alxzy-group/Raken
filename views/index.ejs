@@ -74,14 +74,10 @@
             filter: invert(1) hue-rotate(180deg);
             background-color: #FAFAFA; /* Inverted #050505 */
         }
-        /* Re-invert images so they don't look like negatives, except the favicon which needs to become black */
-        html.light-theme img:not([src="/favicon.png"]), 
+        /* Re-invert images so they don't look like negatives */
+        html.light-theme img, 
         html.light-theme .re-invert {
             filter: invert(1) hue-rotate(180deg); 
-        }
-        /* Make favicon a pure black silhouette in light mode */
-        html.light-theme img[src="/favicon.png"] {
-            filter: brightness(0) invert(1);
         }
         /* Force stronger colors for danger/warning in light mode */
         html.light-theme .text-danger.re-invert {
@@ -255,7 +251,7 @@
                 </div>
                 
                 <!-- Theme Toggle Button (Always Visible) -->
-                <button @click="toggleTheme()" class="p-2 rounded-full bg-surface border border-border text-gray-400 hover:text-accent transition-all focus:outline-none re-invert">
+                <button @click="toggleTheme()" class="p-2 rounded-full bg-surface border border-border text-gray-400 hover:text-accent transition-all focus:outline-none">
                     <svg x-show="isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg x-show="!isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
