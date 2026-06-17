@@ -71,13 +71,22 @@
     
         /* MAGIC LIGHT MODE */
         html.light-theme {
-            filter: invert(1) hue-rotate(180deg) contrast(1.1) saturate(1.2);
+            filter: invert(1) hue-rotate(180deg);
             background-color: #FAFAFA; /* Inverted #050505 */
         }
         /* Re-invert images so they don't look like negatives */
         html.light-theme img, 
         html.light-theme .re-invert {
-            filter: invert(1) hue-rotate(180deg) contrast(0.9) saturate(0.8); /* Counteract the contrast/saturate boost */
+            filter: invert(1) hue-rotate(180deg); 
+        }
+        /* Force stronger colors for danger/warning in light mode */
+        html.light-theme .text-danger.re-invert {
+            color: #DC2626 !important;
+            font-weight: 900 !important;
+        }
+        html.light-theme .text-warning.re-invert {
+            color: #D97706 !important;
+            font-weight: 900 !important;
         }
         /* Optional: adjust scrollbar for light mode since it's inverted globally */
         html.light-theme ::-webkit-scrollbar-track { background: #FAFAFA; }

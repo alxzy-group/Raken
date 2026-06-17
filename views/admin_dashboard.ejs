@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="id" class="dark">
 <head>
+    <script>
+        try {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light-theme');
+            }
+        } catch(e) {}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | Ravenzena Bot</title>
@@ -22,6 +30,26 @@
         .grid-lines { background-image: linear-gradient(to right, #111111 1px, transparent 1px), linear-gradient(to bottom, #111111 1px, transparent 1px); background-size: 40px 40px; }
         .order-card { background: #0A0A0A; border: 1px solid #262626; transition: border-color 0.2s; }
         .order-card:hover { border-color: #3B82F6; }
+        
+        /* MAGIC LIGHT MODE */
+        html.light-theme {
+            filter: invert(1) hue-rotate(180deg);
+            background-color: #FAFAFA;
+        }
+        html.light-theme img, 
+        html.light-theme .re-invert {
+            filter: invert(1) hue-rotate(180deg); 
+        }
+        html.light-theme .text-danger.re-invert {
+            color: #DC2626 !important;
+            font-weight: 900 !important;
+        }
+        html.light-theme .text-warning.re-invert {
+            color: #D97706 !important;
+            font-weight: 900 !important;
+        }
+        html.light-theme ::-webkit-scrollbar-track { background: #FAFAFA; }
+        html.light-theme ::-webkit-scrollbar-thumb { background: #D9D9D9; }
     </style>
 </head>
 <body class="antialiased min-h-screen">
@@ -33,12 +61,19 @@
                 <img src="/favicon.png" alt="Logo" class="w-8 h-8 rounded-lg">
                 <span class="font-bold text-lg text-white">Admin Dashboard</span>
             </div>
-            <!-- Hamburger Button -->
-            <button id="mobile-menu-btn" onclick="toggleMobileMenu(true)" class="text-gray-400 hover:text-white focus:outline-none flex items-center justify-center p-2 rounded-lg bg-surface/50 border border-border">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
+            <div class="flex items-center gap-2">
+                <!-- Theme Toggle Button -->
+                <button onclick="toggleTheme()" class="text-gray-400 hover:text-white focus:outline-none flex items-center justify-center p-2 rounded-lg bg-surface/50 border border-border re-invert">
+                    <svg class="w-6 h-6 text-accent theme-icon-sun" style="display:none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg class="w-6 h-6 theme-icon-moon" style="display:block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+                <!-- Hamburger Button -->
+                <button id="mobile-menu-btn" onclick="toggleMobileMenu(true)" class="text-gray-400 hover:text-white focus:outline-none flex items-center justify-center p-2 rounded-lg bg-surface/50 border border-border">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -292,6 +327,28 @@
     </div>
 
     <script>
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light-theme');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeIcons();
+        }
+
+        function updateThemeIcons() {
+            const isDark = document.documentElement.classList.contains('dark');
+            document.querySelectorAll('.theme-icon-sun').forEach(el => el.style.display = isDark ? 'none' : 'block');
+            document.querySelectorAll('.theme-icon-moon').forEach(el => el.style.display = isDark ? 'block' : 'none');
+        }
+        
+        document.addEventListener('DOMContentLoaded', updateThemeIcons);
+
         let currentTab = 'baru';
 
         function updateCountdowns() {
