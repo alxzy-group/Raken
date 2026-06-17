@@ -234,42 +234,40 @@
                 <span class="font-bold text-lg text-white">Ravenzena<span class="text-accent">Bot</span></span>
             </div>
 
-            <div class="hidden md:flex items-center gap-8">
-                <div class="flex items-center gap-6 text-sm font-medium text-gray-400">
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-400 mr-2">
                     <a href="#" class="hover:text-white transition-colors">Fitur</a>
                     <a href="#" class="hover:text-white transition-colors">Harga</a>
                     <a href="#" class="hover:text-white transition-colors">Panduan</a>
                 </div>
                 
-                <!-- Theme Toggle Button -->
+                <!-- Theme Toggle Button (Always Visible) -->
                 <button @click="toggleTheme()" class="p-2 rounded-full bg-surface border border-border text-gray-400 hover:text-accent transition-all focus:outline-none re-invert">
                     <svg x-show="!isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg x-show="isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                 </button>
 
-                <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="bg-white text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-all">Pesan Sekarang</button>
-                <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="bg-surface border border-border text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all">Kembali</button>
-            </div>
+                <!-- Action Buttons (Desktop Only) -->
+                <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="hidden md:block bg-white text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-all">Pesan Sekarang</button>
+                <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="hidden md:block bg-surface border border-border text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all">Kembali</button>
 
-            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white p-2 focus:outline-none">
-                <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-                <svg x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
+                <!-- Hamburger Button -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white p-2 focus:outline-none ml-1">
+                    <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <svg x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <div x-show="mobileMenuOpen" x-transition class="md:hidden absolute top-16 left-0 w-full bg-base/95 border-b border-border flex flex-col p-4 gap-2 backdrop-blur-md">
             <button @click="view = 'home'; history.pushState(null, '', '/'); mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Beranda</button>
             <button @click="view = 'order'; mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Pesan Sekarang</button>
             
-            <button @click="toggleTheme()" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors flex justify-between items-center re-invert">
-                <span x-text="isDarkMode ? 'Mode Terang' : 'Mode Gelap'"></span>
-                <svg x-show="!isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <svg x-show="isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            </button>
+            <!-- Theme toggle moved to header -->
 
         </div>
     </nav>
