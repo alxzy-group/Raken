@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="id" class="dark">
 <head>
+    <script>
+        try {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.remove('dark');
+            }
+        } catch(e) {}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ravenzena Bot | Layanan Bot WhatsApp</title>
@@ -60,6 +67,25 @@
         ::-webkit-scrollbar-track { background: #050505; }
         ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+    
+        /* LIGHT MODE OVERRIDES */
+        html:not(.dark) body { background-color: #f8fafc; color: #0f172a; }
+        html:not(.dark) .text-white:not(.bg-accent):not(.bg-surface):not(.border-border) { color: #0f172a !important; }
+        html:not(.dark) .bg-\[\#111111\] { background-color: #ffffff !important; color: #0f172a !important; }
+        html:not(.dark) .border-\[\#262626\] { border-color: #e2e8f0 !important; }
+        html:not(.dark) .bg-\[\#1a1a1a\] { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; }
+        html:not(.dark) .bg-surface { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+        html:not(.dark) .border-border { border-color: #e2e8f0 !important; }
+        html:not(.dark) .bg-base { background-color: #f8fafc !important; }
+        html:not(.dark) .text-gray-400 { color: #64748b !important; }
+        html:not(.dark) .text-gray-500 { color: #94a3b8 !important; }
+        html:not(.dark) .text-gray-300 { color: #475569 !important; }
+        html:not(.dark) .pro-card { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
+        html:not(.dark) .grid-lines {
+            background-image: linear-gradient(to right, #e2e8f0 1px, transparent 1px),
+                linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
+        }
+
     </style>
 
     <script>
@@ -87,7 +113,31 @@
                 timeLeft: 300,
                 isLoading: false,
 
+                
+                isDarkMode: true,
+                initTheme() {
+                    const storedTheme = localStorage.getItem('theme');
+                    if (storedTheme === 'light') {
+                        this.isDarkMode = false;
+                        document.documentElement.classList.remove('dark');
+                    } else {
+                        this.isDarkMode = true;
+                        document.documentElement.classList.add('dark');
+                    }
+                },
+                toggleTheme() {
+                    this.isDarkMode = !this.isDarkMode;
+                    if (this.isDarkMode) {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('theme', 'light');
+                    }
+                },
                 init() {
+                    this.initTheme();
+
                     if (this.view === 'checkout') {
                         this.startTimers();
                     }
@@ -189,6 +239,13 @@
                     <a href="#" class="hover:text-white transition-colors">Harga</a>
                     <a href="#" class="hover:text-white transition-colors">Panduan</a>
                 </div>
+                
+                <!-- Theme Toggle Button -->
+                <button @click="toggleTheme()" class="p-2 rounded-full bg-surface border border-border text-gray-400 hover:text-accent transition-all focus:outline-none">
+                    <svg x-show="!isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <svg x-show="isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+
                 <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="bg-white text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-all">Pesan Sekarang</button>
                 <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="bg-surface border border-border text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all">Kembali</button>
             </div>
@@ -206,6 +263,19 @@
         <div x-show="mobileMenuOpen" x-transition class="md:hidden absolute top-16 left-0 w-full bg-base/95 border-b border-border flex flex-col p-4 gap-2 backdrop-blur-md">
             <button @click="view = 'home'; history.pushState(null, '', '/'); mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Beranda</button>
             <button @click="view = 'order'; mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Pesan Sekarang</button>
+            <button @click="toggleTheme()" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors flex justify-between items-center">
+                <span x-text="isDarkMode ? 'Ganti Tema Terang' : 'Ganti Tema Gelap'" :class="isDarkMode ? 'text-white' : 'text-gray-900'"></span>
+                <svg x-show="!isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg x-show="isDarkMode" class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+        </div>
+        
+            <button @click="toggleTheme()" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors flex justify-between items-center">
+                <span x-text="isDarkMode ? 'Mode Terang' : 'Mode Gelap'"></span>
+                <svg x-show="!isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg x-show="isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+
         </div>
     </nav>
 
