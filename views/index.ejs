@@ -71,13 +71,13 @@
     
         /* MAGIC LIGHT MODE */
         html.light-theme {
-            filter: invert(1) hue-rotate(180deg);
+            filter: invert(1) hue-rotate(180deg) contrast(1.1) saturate(1.2);
             background-color: #FAFAFA; /* Inverted #050505 */
         }
         /* Re-invert images so they don't look like negatives */
         html.light-theme img, 
         html.light-theme .re-invert {
-            filter: invert(1) hue-rotate(180deg);
+            filter: invert(1) hue-rotate(180deg) contrast(0.9) saturate(0.8); /* Counteract the contrast/saturate boost */
         }
         /* Optional: adjust scrollbar for light mode since it's inverted globally */
         html.light-theme ::-webkit-scrollbar-track { background: #FAFAFA; }
@@ -365,7 +365,7 @@
                                         <div>
                                             <label class="block text-sm font-medium text-gray-400 mb-2">Link Grup WhatsApp</label>
                                             <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-all">
-                                            <p class="mt-2 text-[10px] text-danger font-bold uppercase animate-pulse">
+                                            <p class="mt-2 text-[10px] text-danger font-bold uppercase animate-pulse re-invert">
                                                 * WAJIB MATIKAN FITUR PERSETUJUAN ADMIN AGAR BOT TIDAK ERROR SAAT JOIN
                                             </p>
                                         </div>
@@ -392,10 +392,10 @@
                                     </div>
 
                                     <div x-show="orderType === 'perpanjang'" class="mb-6 p-4 bg-warning/10 border border-warning/20 rounded-xl flex items-center gap-3" x-transition>
-                                        <div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center flex-shrink-0">
+                                        <div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center flex-shrink-0 re-invert">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                         </div>
-                                        <p class="text-[10px] md:text-xs font-bold text-warning leading-relaxed uppercase">
+                                        <p class="text-[10px] md:text-xs font-bold text-warning leading-relaxed uppercase re-invert">
                                             PASTI KAN BOT YANG MAU DI PERPANJANG ADA DI DALAM GRUP
                                         </p>
                                     </div>
@@ -444,7 +444,7 @@
 
                     <!-- Admin Approval Warning -->
                     <div x-show="status === 'PENDING'" class="mb-8 p-4 bg-danger/10 border border-danger/20 rounded-2xl">
-                        <p class="text-[10px] md:text-xs font-black text-danger uppercase leading-relaxed text-center">
+                        <p class="text-[10px] md:text-xs font-black text-danger uppercase leading-relaxed text-center re-invert">
                             ⚠️ PENTING: WAJIB MATIKAN FITUR PERSETUJUAN ADMIN GRUP AGAR BOT TIDAK ERROR SAAT JOIN ⚠️
                         </p>
                     </div>
