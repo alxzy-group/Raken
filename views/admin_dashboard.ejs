@@ -40,6 +40,10 @@
         html.light-theme .re-invert {
             filter: invert(1) hue-rotate(180deg); 
         }
+        /* Make favicon a pure black silhouette in light mode */
+        html.light-theme img[src="/favicon.png"] {
+            filter: brightness(0) invert(1);
+        }
         html.light-theme .text-danger.re-invert {
             color: #DC2626 !important;
             font-weight: 900 !important;
@@ -343,8 +347,8 @@
 
         function updateThemeIcons() {
             const isDark = document.documentElement.classList.contains('dark');
-            document.querySelectorAll('.theme-icon-sun').forEach(el => el.style.display = isDark ? 'none' : 'block');
-            document.querySelectorAll('.theme-icon-moon').forEach(el => el.style.display = isDark ? 'block' : 'none');
+            document.querySelectorAll('.theme-icon-sun').forEach(el => el.style.display = isDark ? 'block' : 'none');
+            document.querySelectorAll('.theme-icon-moon').forEach(el => el.style.display = isDark ? 'none' : 'block');
         }
         
         document.addEventListener('DOMContentLoaded', updateThemeIcons);
