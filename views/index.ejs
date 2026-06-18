@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id" class="light-theme">
 <head>
     <script>
         try {
+            localStorage.setItem('theme', 'light');
             if (localStorage.getItem('theme') === 'light') {
                 document.documentElement.classList.remove('dark');
                 document.documentElement.classList.add('light-theme');
@@ -69,17 +70,39 @@
         ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
     
-        /* MAGIC LIGHT MODE */
+        /* MAGIC LIGHT MODE - WHITE THEME */
         html.light-theme {
-            filter: invert(1) hue-rotate(180deg);
-            background-color: #FAFAFA; /* Inverted #050505 */
+            background-color: #FFFFFF;
+            color: #000000;
         }
-        /* Re-invert images so they don't look like negatives */
-        html.light-theme img, 
-        html.light-theme .re-invert {
-            filter: invert(1) hue-rotate(180deg); 
+        html.light-theme body {
+            background-color: #FFFFFF;
+            color: #000000;
         }
-        /* Force stronger colors for danger/warning in light mode */
+        html.light-theme .grid-lines {
+            background-image: linear-gradient(to right, #E5E7EB 1px, transparent 1px),
+                linear-gradient(to bottom, #E5E7EB 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        html.light-theme .pro-card {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+        }
+        html.light-theme .pro-card:hover { border-color: #3B82F6; }
+        html.light-theme .active-module { border-color: #3B82F6; background: rgba(59, 130, 246, 0.05); }
+        html.light-theme .text-white { color: #000000; }
+        html.light-theme .text-gray-400 { color: #6B7280; }
+        html.light-theme .text-gray-300 { color: #D1D5DB; }
+        html.light-theme .bg-base { background-color: #FFFFFF; }
+        html.light-theme .bg-surface { background-color: #F9FAFB; }
+        html.light-theme .border-border { border-color: #E5E7EB; }
+        html.light-theme .bg-accent\/10 { background-color: rgba(59, 130, 246, 0.1); }
+        html.light-theme .bg-accent\/20 { background-color: rgba(59, 130, 246, 0.2); }
+        html.light-theme .text-accent { color: #3B82F6; }
+        html.light-theme nav { background-color: rgba(255, 255, 255, 0.9) !important; }
+        html.light-theme .fixed { background-color: transparent; }
+        html.light-theme img { filter: none; }
+        html.light-theme .re-invert { filter: none; }
         html.light-theme .text-danger.re-invert {
             color: #DC2626 !important;
             font-weight: 900 !important;
@@ -88,9 +111,8 @@
             color: #D97706 !important;
             font-weight: 900 !important;
         }
-        /* Optional: adjust scrollbar for light mode since it's inverted globally */
-        html.light-theme ::-webkit-scrollbar-track { background: #FAFAFA; }
-        html.light-theme ::-webkit-scrollbar-thumb { background: #D9D9D9; }
+        html.light-theme ::-webkit-scrollbar-track { background: #FFFFFF; }
+        html.light-theme ::-webkit-scrollbar-thumb { background: #D1D5DB; }
 
     </style>
 
@@ -120,18 +142,12 @@
                 isLoading: false,
 
                 
-                isDarkMode: true,
+                isDarkMode: false,
                 initTheme() {
-                    const storedTheme = localStorage.getItem('theme');
-                    if (storedTheme === 'light') {
-                        this.isDarkMode = false;
-                        document.documentElement.classList.remove('dark');
-                        document.documentElement.classList.add('light-theme');
-                    } else {
-                        this.isDarkMode = true;
-                        document.documentElement.classList.add('dark');
-                        document.documentElement.classList.remove('light-theme');
-                    }
+                    localStorage.setItem('theme', 'light');
+                    this.isDarkMode = false;
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light-theme');
                 },
                 toggleTheme() {
                     this.isDarkMode = !this.isDarkMode;
@@ -252,7 +268,7 @@
                 
                 <!-- Theme Toggle Button (Always Visible) -->
                 <button @click="toggleTheme()" class="p-2 rounded-full bg-surface border border-border text-gray-400 hover:text-accent transition-all focus:outline-none">
-                    <svg x-show="isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                    <svg x-show="isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0112 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                     <svg x-show="!isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                 </button>
 
@@ -289,7 +305,7 @@
                 </div>
                 
                 <div data-aos="zoom-in" data-aos-delay="50" class="mb-10 rounded-3xl overflow-hidden border border-border shadow-2xl shadow-accent/10">
-                    <img src="https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg" alt="Ravenzena Bot" class="w-full h-auto object-cover">
+                    <img src="https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg" alt="Ravenzena Bot" class="w-80 h-auto mx-auto object-cover">
                 </div>
                 
                 <h1 data-aos="fade-up" class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
