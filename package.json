@@ -18,7 +18,8 @@
     "cors": "^2.8.6",
     "dotenv": "latest",
     "ejs": "^5.0.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "mustikapay-node": "^1.4.1"
   },
   "devDependencies": {
     "prisma": "^5.22.0"

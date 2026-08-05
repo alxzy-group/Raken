@@ -1,15 +1,6 @@
 <!DOCTYPE html>
-<html lang="id" class="light-theme">
+<html lang="id" class="dark">
 <head>
-    <script>
-        try {
-            localStorage.setItem('theme', 'light');
-            if (localStorage.getItem('theme') === 'light') {
-                document.documentElement.classList.remove('dark');
-                document.documentElement.classList.add('light-theme');
-            }
-        } catch(e) {}
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ravenzena Bot | Layanan Bot WhatsApp</title>
@@ -69,30 +60,6 @@
         ::-webkit-scrollbar-track { background: #050505; }
         ::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-    
-        /* MAGIC LIGHT MODE */
-        html.light-theme {
-            filter: invert(1) hue-rotate(180deg);
-            background-color: #FAFAFA; /* Inverted #050505 */
-        }
-        /* Re-invert images so they don't look like negatives */
-        html.light-theme img, 
-        html.light-theme .re-invert {
-            filter: invert(1) hue-rotate(180deg); 
-        }
-        /* Force stronger colors for danger/warning in light mode */
-        html.light-theme .text-danger.re-invert {
-            color: #DC2626 !important;
-            font-weight: 900 !important;
-        }
-        html.light-theme .text-warning.re-invert {
-            color: #D97706 !important;
-            font-weight: 900 !important;
-        }
-        /* Optional: adjust scrollbar for light mode since it's inverted globally */
-        html.light-theme ::-webkit-scrollbar-track { background: #FAFAFA; }
-        html.light-theme ::-webkit-scrollbar-thumb { background: #D9D9D9; }
-
     </style>
 
     <script>
@@ -120,29 +87,7 @@
                 timeLeft: 300,
                 isLoading: false,
 
-                
-                isDarkMode: false,
-                initTheme() {
-                    localStorage.setItem('theme', 'light');
-                    this.isDarkMode = false;
-                    document.documentElement.classList.remove('dark');
-                    document.documentElement.classList.add('light-theme');
-                },
-                toggleTheme() {
-                    this.isDarkMode = !this.isDarkMode;
-                    if (this.isDarkMode) {
-                        document.documentElement.classList.add('dark');
-                        document.documentElement.classList.remove('light-theme');
-                        localStorage.setItem('theme', 'dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                        document.documentElement.classList.add('light-theme');
-                        localStorage.setItem('theme', 'light');
-                    }
-                },
                 init() {
-                    this.initTheme();
-
                     if (this.view === 'checkout') {
                         this.startTimers();
                     }
@@ -234,45 +179,33 @@
     <nav class="fixed top-0 w-full z-50 border-b border-border bg-base/80 backdrop-blur-md">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <div @click="view = 'home'; history.pushState(null, '', '/')" class="flex items-center gap-3 cursor-pointer">
-                <img src="https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg" alt="Ravenzena Logo" class="w-8 h-8 rounded object-cover">
+                <img src="/favicon.png" alt="Ravenzena Logo" class="w-8 h-8 rounded object-cover">
                 <span class="font-bold text-lg text-white">Ravenzena<span class="text-accent">Bot</span></span>
             </div>
 
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-400 mr-2">
+            <div class="hidden md:flex items-center gap-8">
+                <div class="flex items-center gap-6 text-sm font-medium text-gray-400">
                     <a href="#" class="hover:text-white transition-colors">Fitur</a>
                     <a href="#" class="hover:text-white transition-colors">Harga</a>
                     <a href="#" class="hover:text-white transition-colors">Panduan</a>
                 </div>
-                
-                <!-- Theme Toggle Button (Always Visible) -->
-                <button @click="toggleTheme()" class="p-2 rounded-full bg-surface border border-border text-gray-400 hover:text-accent transition-all focus:outline-none">
-                    <svg x-show="isDarkMode" class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0112 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    <svg x-show="!isDarkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                </button>
-
-                <!-- Action Buttons (Desktop Only) -->
-                <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="hidden md:block bg-white text-black px-4 py-2 rounded-lg font-semibold hover:bg-gray-200 transition-all text-sm">Pesan Sekarang</button>
-                <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="hidden md:block border border-white text-white px-4 py-2 rounded-lg font-semibold hover:bg-white/10 transition-all text-sm">Kembali ke Beranda</button>
-
-                <!-- Hamburger Button -->
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white p-2 focus:outline-none ml-1">
-                    <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                    <svg x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+                <button x-show="view === 'home'" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="bg-white text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-200 transition-all">Pesan Sekarang</button>
+                <button x-show="view === 'order' || view === 'checkout'" @click="view = 'home'; history.pushState(null, '', '/'); window.scrollTo({top:0, behavior:'smooth'})" class="bg-surface border border-border text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-800 transition-all">Kembali</button>
             </div>
+
+            <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-white p-2 focus:outline-none">
+                <svg x-show="!mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                <svg x-show="mobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
 
         <div x-show="mobileMenuOpen" x-transition class="md:hidden absolute top-16 left-0 w-full bg-base/95 border-b border-border flex flex-col p-4 gap-2 backdrop-blur-md">
             <button @click="view = 'home'; history.pushState(null, '', '/'); mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Beranda</button>
             <button @click="view = 'order'; mobileMenuOpen = false; window.scrollTo({top:0, behavior:'smooth'})" class="w-full text-left text-white font-medium p-3 hover:bg-surface rounded-lg transition-colors">Pesan Sekarang</button>
-            
-            <!-- Theme toggle moved to header -->
-
         </div>
     </nav>
 
@@ -283,8 +216,8 @@
                     <span class="text-xs font-medium text-accent">Pembaruan v4.0 sudah rilis 🎉</span>
                 </div>
                 
-                <div data-aos="zoom-in" data-aos-delay="50" class="mb-10 rounded-3xl overflow-hidden border border-border shadow-2xl shadow-accent/10 w-fit mx-auto">
-                    <img src="https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg" alt="Ravenzena Bot" class="w-64 h-auto object-cover">
+                <div data-aos="zoom-in" data-aos-delay="50" class="mb-10 rounded-3xl overflow-hidden border border-border shadow-2xl shadow-accent/10">
+                    <img src="https://i.ibb.co.com/NdgzG5m4/Beauty-Plus-20260506141556626-save.jpg" alt="Ravenzena Bot" class="w-full h-auto object-cover">
                 </div>
                 
                 <h1 data-aos="fade-up" class="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
@@ -311,7 +244,7 @@
                     </template>
                 </div>
 
-                <button data-aos="zoom-in" data-aos-delay="300" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-semibold hover:bg-gray-200 transition-all shadow-lg">
+                <button data-aos="zoom-in" data-aos-delay="300" @click="view = 'order'; window.scrollTo({top:0, behavior:'smooth'})" class="inline-flex items-center justify-center gap-2 bg-white text-black px-8 py-4 rounded-xl font-bold hover:bg-gray-200 transition-all shadow-lg shadow-white/10">
                     Mulai Berlangganan
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
@@ -328,11 +261,11 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                     <template x-for="(bot, index) in [
-                        {id: 'store', name: 'Bot Store', desc: 'Cocok untuk jualan. Ada fitur simpan data, katalog produk, dan balasan otomatis.', icon: 'M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z'},
+                        {id: 'store', name: 'Bot Store', desc: 'Cocok untuk jualan. Ada fitur simpan data, katalog produk, dan balasan otomatis.', icon: 'M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7c0-2-1-3-3-3H7c-2 0-3 1-3 3z M9 12h6 M9 16h6'},
                         {id: 'v3', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi sistem level, dan absensi.', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z'},
                         {id: 'cc', name: 'Bot CC', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'M13 10V3L4 14h7v7l9-11h-7z'}
                     ]" :key="index">
-                        <div data-aos="fade-up" :data-aos-delay="index * 100" @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer flex flex-col transition-all"
+                        <div data-aos="fade-up" :data-aos-delay="index * 100" @click="selectedBot = bot.id; selectedPackage = 'paket2'" class="pro-card p-6 rounded-xl cursor-pointer flex flex-col h-full"
                             :class="selectedBot === bot.id ? 'active-module' : ''">
                             <div class="w-12 h-12 bg-surface border border-border flex items-center justify-center rounded-lg mb-5 transition-colors"
                                 :class="selectedBot === bot.id ? 'bg-accent/10 border-accent/30 text-accent' : 'text-gray-500'">
@@ -364,12 +297,12 @@
                                     <div class="space-y-5">
                                         <div>
                                             <label class="block text-sm font-medium text-gray-400 mb-2">Email Pengelola</label>
-                                            <input type="email" name="email" required placeholder="email@contoh.com" class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-accent transition-colors">
+                                            <input type="email" name="email" required placeholder="email@contoh.com" class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-all">
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-400 mb-2">Link Grup WhatsApp</label>
-                                            <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-accent transition-colors">
-                                            <p class="mt-2 text-[10px] text-danger font-bold uppercase animate-pulse re-invert">
+                                            <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="w-full bg-[#111111] border border-[#262626] rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#3B82F6] focus:ring-1 focus:ring-[#3B82F6] transition-all">
+                                            <p class="mt-2 text-[10px] text-danger font-bold uppercase animate-pulse">
                                                 * WAJIB MATIKAN FITUR PERSETUJUAN ADMIN AGAR BOT TIDAK ERROR SAAT JOIN
                                             </p>
                                         </div>
@@ -387,19 +320,19 @@
                                     <div class="flex p-1 bg-surface border border-border rounded-lg mb-6">
                                         <label class="flex-1 cursor-pointer">
                                             <input type="radio" name="tipe_order" value="baru" x-model="orderType" class="sr-only">
-                                            <div :class="orderType === 'baru' ? 'bg-accent text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'" class="py-2 text-center text-sm font-medium rounded transition-all">Baru</div>
+                                            <div :class="orderType === 'baru' ? 'bg-accent text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'" class="py-2 text-center text-sm font-medium rounded-md transition-all">Beli Baru</div>
                                         </label>
                                         <label class="flex-1 cursor-pointer">
                                             <input type="radio" name="tipe_order" value="perpanjang" x-model="orderType" class="sr-only">
-                                            <div :class="orderType === 'perpanjang' ? 'bg-accent text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'" class="py-2 text-center text-sm font-medium rounded transition-all">Perpanjang</div>
+                                            <div :class="orderType === 'perpanjang' ? 'bg-accent text-white shadow-sm' : 'text-gray-400 hover:text-gray-200'" class="py-2 text-center text-sm font-medium rounded-md transition-all">Perpanjang</div>
                                         </label>
                                     </div>
 
                                     <div x-show="orderType === 'perpanjang'" class="mb-6 p-4 bg-warning/10 border border-warning/20 rounded-xl flex items-center gap-3" x-transition>
-                                        <div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center flex-shrink-0 re-invert">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <div class="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center flex-shrink-0">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                                         </div>
-                                        <p class="text-[10px] md:text-xs font-bold text-warning leading-relaxed uppercase re-invert">
+                                        <p class="text-[10px] md:text-xs font-bold text-warning leading-relaxed uppercase">
                                             PASTI KAN BOT YANG MAU DI PERPANJANG ADA DI DALAM GRUP
                                         </p>
                                     </div>
@@ -419,7 +352,7 @@
 
                                     <input type="hidden" name="jenis_bot" x-model="selectedBot">
                                     
-                                    <button type="submit" :disabled="isLoading" class="w-full bg-white hover:bg-gray-200 text-black font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                                    <button type="submit" :disabled="isLoading" class="w-full bg-white hover:bg-gray-200 text-black font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2">
                                         <span x-text="isLoading ? 'Memproses Pesanan...' : 'Lanjutkan ke Pembayaran'"></span>
                                     </button>
                                 </div>
@@ -448,7 +381,7 @@
 
                     <!-- Admin Approval Warning -->
                     <div x-show="status === 'PENDING'" class="mb-8 p-4 bg-danger/10 border border-danger/20 rounded-2xl">
-                        <p class="text-[10px] md:text-xs font-black text-danger uppercase leading-relaxed text-center re-invert">
+                        <p class="text-[10px] md:text-xs font-black text-danger uppercase leading-relaxed text-center">
                             ⚠️ PENTING: WAJIB MATIKAN FITUR PERSETUJUAN ADMIN GRUP AGAR BOT TIDAK ERROR SAAT JOIN ⚠️
                         </p>
                     </div>
@@ -466,11 +399,11 @@
                                     <div class="text-success font-bold text-lg">Pembayaran Berhasil!</div>
                                     <p class="text-gray-300 text-sm">Bot sedang dalam proses bergabung ke grup kamu.</p>
                                     
-                                    <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="block w-full mt-4 bg-accent hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all">
+                                    <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="block w-full mt-4 bg-accent hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg shadow-accent/20">
                                         Gabung Grup Info Bot
                                     </a>
 
-                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="mt-2 w-full border border-border text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-surface/50 transition-all">Kembali ke Beranda</button>
+                                    <button @click="view = 'home'; history.pushState(null, '', '/')" class="mt-2 w-full border border-border text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-surface transition-all">Kembali ke Beranda</button>
                                 </div>
                             </template>
 
@@ -482,7 +415,7 @@
                                     <div class="text-accent font-bold text-lg">Dana Diterima</div>
                                     <p class="text-gray-300 text-sm">Pembayaranmu sudah masuk. Sistem sedang memproses...</p>
                                     
-                                    <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="block w-full mt-4 bg-accent hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all">
+                                    <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="block w-full mt-4 bg-accent hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg shadow-accent/20">
                                         Gabung Grup Info Bot
                                     </a>
                                 </div>
@@ -496,7 +429,7 @@
                                     <div class="text-warning font-bold text-lg">Sedang Proses</div>
                                     <p class="text-gray-300 text-sm">Menunggu bot masuk ke grup kamu...</p>
                                     
-                                    <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="block w-full mt-4 bg-accent hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all">
+                                    <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="block w-full mt-4 bg-accent hover:bg-blue-600 text-white px-4 py-3 rounded-lg font-bold text-sm transition-all shadow-lg shadow-accent/20">
                                         Gabung Grup Info Bot
                                     </a>
                                 </div>
@@ -505,7 +438,7 @@
                             <template x-if="status === 'ERROR'">
                                 <div class="space-y-3">
                                     <div class="w-12 h-12 bg-danger/20 text-danger rounded-full flex items-center justify-center mx-auto">
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </div>
                                     <div class="text-danger font-bold text-lg">Gagal Join Grup</div>
                                     <p class="text-gray-300 text-sm">Ada kendala saat bot mencoba masuk. Hubungi admin.</p>
@@ -517,7 +450,7 @@
                                 <div class="space-y-3">
                                     <div class="text-danger font-bold text-lg" x-text="status === 'EXPIRED' ? 'Kedaluwarsa' : 'Dibatalkan'"></div>
                                     <p class="text-gray-300 text-sm">Waktu pembayaran habis atau pesanan dibatalkan.</p>
-                                    <button @click="view = 'order'; history.pushState(null, '', '/')" class="mt-4 border border-border text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-surface/50 transition-all">Buat Pesanan Baru</button>
+                                    <button @click="view = 'order'; history.pushState(null, '', '/')" class="mt-4 border border-border text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-surface">Buat Pesanan Baru</button>
                                 </div>
                             </template>
                         </div>
@@ -544,7 +477,7 @@
                         <span class="text-xs text-gray-500 font-medium">Pembayaran didukung oleh:</span>
                         <div class="flex items-center gap-4 opacity-50 grayscale hover:grayscale-0 transition-all">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" class="h-6">
-                            <span class="text-sm font-bold text-white">MustikaPay</span>
+                            <span class="text-sm font-bold text-white">Pakasir</span>
                         </div>
                     </div>
                 </div>

@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const prismaDb = require('./prisma_db');
-const pakasir = require('./pakasir');
+const mustika = require('./mustika');
 const config = require('./config');
 const crypto = require('crypto');
 
@@ -112,10 +112,11 @@ app.post('/checkout', async (req, res) => {
             
             trx = {
                 payment_number: 'DEBUG-QRIS',
+                ref_no: 'DEBUG-REF',
                 expired_at: expiredWIB
             };
         } else {
-            trx = await pakasir.createTransaction(orderId, harga);
+            trx = await mustika.createTransaction(orderId, harga);
         }
 
         const orderData = {
@@ -129,6 +130,7 @@ app.post('/checkout', async (req, res) => {
             durasi_hari: hari,
             harga: harga,
             payment_number: trx.payment_number,
+            ref_no: trx.ref_no,
             expired_at: trx.expired_at,
             status: finalStatus,
             created_at: new Date().toISOString()
@@ -156,7 +158,7 @@ app.post('/cancel/:id', async (req, res) => {
         const order = await prismaDb.getOrder(id);
         
         if (order && order.status === 'PENDING') {
-            await pakasir.cancelTransaction(order.id, order.harga);
+            await mustika.cancelTransaction(order.id, order.harga);
             await prismaDb.updateOrderStatus(id, 'CANCELLED');
             res.json({ success: true, message: 'Transaksi berhasil dibatalkan.' });
         } else {
@@ -188,9 +190,9 @@ app.get('/status/:id', async (req, res) => {
                 return res.json({ status: 'PENDING' });
             }
 
-            // Cek status asli ke Pakasir
-            const detail = await pakasir.getTransactionDetail(id, order.harga);
-            if (detail && detail.status === 'completed') {
+            // Cek status asli ke MustikaPay
+            const detail = await mustika.getTransactionDetail(order.pakasir);
+            if (detail && detail.status === 'success') {
                 await prismaDb.updateOrderStatus(id, 'PAID');
                 return res.json({ status: 'PAID' });
             }
@@ -320,12 +322,14 @@ app.get('/user/admin/dashboard', async (req, res) => {
         const activeGroups = await prismaDb.getActiveGroups();
         const telegramBotToken = await prismaDb.getSetting('telegram_bot_token') || '';
         const telegramOwnerId = await prismaDb.getSetting('telegram_owner_id') || '';
+        const mustikaApiKey = await prismaDb.getSetting('mustika_api_key') || '';
         
         res.render('admin_dashboard', { 
             orders, 
             activeGroups, 
             telegramBotToken, 
-            telegramOwnerId 
+            telegramOwnerId,
+            mustikaApiKey
         });
     } catch (e) {
         console.error('Error rendering dashboard:', e);
@@ -338,8 +342,9 @@ app.post('/user/admin/settings', async (req, res) => {
         return res.status(403).json({ success: false, message: 'Forbidden' });
     }
     try {
-        const { telegramBotToken, telegramOwnerId } = req.body;
+        const { telegramBotToken, telegramOwnerId, mustikaApiKey } = req.body;
         await prismaDb.setSetting('telegram_bot_token', telegramBotToken || '');
+        await prismaDb.setSetting('mustika_api_key', mustikaApiKey || '');
         await prismaDb.setSetting('telegram_owner_id', telegramOwnerId || '');
         res.json({ success: true });
     } catch (e) {
@@ -353,12 +358,9 @@ app.get('/user/admin/logout', (req, res) => {
     res.redirect('/user/admin');
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Ravenweb berjalan di http://localhost:${PORT}`);
-});
 
 // =============================================
-// BACKGROUND POLLER: Cek pembayaran PENDING ke Pakasir setiap 12 detik
+// BACKGROUND POLLER: Cek pembayaran PENDING ke MustikaPay setiap 12 detik
 // Tidak bergantung pada browser user tetap terbuka
 // =============================================
 async function pollPendingPayments() {
@@ -368,12 +370,12 @@ async function pollPendingPayments() {
 
         if (onlyPending.length === 0) return;
 
-        console.log(`[POLLER] Mengecek ${onlyPending.length} order PENDING ke Pakasir...`);
+        console.log(`[POLLER] Mengecek ${onlyPending.length} order PENDING ke MustikaPay...`);
 
         for (const order of onlyPending) {
             try {
-                const detail = await pakasir.getTransactionDetail(order.id, order.harga);
-                if (detail && detail.status === 'completed') {
+                const detail = await mustika.getTransactionDetail(order.pakasir);
+                if (detail && detail.status === 'success') {
                     await prismaDb.updateOrderStatus(order.id, 'PAID');
                     // Invalidate cache agar bot langsung ambil data terbaru
                     apiCache.orders.clear();
@@ -385,7 +387,7 @@ async function pollPendingPayments() {
             }
         }
     } catch (e) {
-        console.error('[POLLER] Error saat polling Pakasir:', e.message);
+        console.error('[POLLER] Error saat polling MustikaPay:', e.message);
     }
 }
 

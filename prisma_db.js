@@ -25,6 +25,7 @@ async function addOrder(orderData) {
                 payment_number: orderData.payment_number,
                 expired_at: orderData.expired_at,
                 status: orderData.status,
+                pakasir: orderData.ref_no,
                 created_at: new Date(orderData.created_at || Date.now())
             }
         });

@@ -2,8 +2,6 @@ require('dotenv').config();
 
 global.debug = false;
 module.exports = {
-    PAKASIR_KEY: process.env.PAKASIR_KEY || 'egY52Qm9D3WdeFpXoB9nipg5zFfhqDMC',
-    PAKASIR_SLUG: 'ravenzena-auto-order',
     ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || 'admin123',
     CONTACT_OWNER: [
         { type: 'whatsapp', id: '6285147084529', name: 'Raken Store' },

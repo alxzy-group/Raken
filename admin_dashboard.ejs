@@ -33,7 +33,10 @@
                 <img src="/favicon.png" alt="Logo" class="w-8 h-8 rounded-lg">
                 <span class="font-bold text-lg text-white">Admin Dashboard</span>
             </div>
-            <a href="/user/admin/logout" class="text-sm text-gray-400 hover:text-white transition-colors">Logout</a>
+            <div class="flex items-center gap-4">
+                <button onclick="openSettings()" class="text-sm text-accent hover:text-white transition-colors">Pengaturan</button>
+                <a href="/user/admin/logout" class="text-sm text-gray-400 hover:text-white transition-colors">Logout</a>
+            </div>
         </div>
     </nav>
 
@@ -189,6 +192,33 @@
         </div>
     </main>
 
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center">
+        <div class="bg-surface border border-border p-6 rounded-2xl max-w-md w-full m-4">
+            <h2 class="text-xl font-bold text-white mb-4">Pengaturan Sistem</h2>
+            <form id="settingsForm" onsubmit="saveSettings(event)">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">MustikaPay API Key</label>
+                        <input type="text" id="mustikaApiKey" value="<%= mustikaApiKey %>" class="w-full bg-base border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Telegram Bot Token</label>
+                        <input type="text" id="telegramBotToken" value="<%= telegramBotToken %>" class="w-full bg-base border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Telegram Owner ID</label>
+                        <input type="text" id="telegramOwnerId" value="<%= telegramOwnerId %>" class="w-full bg-base border border-border rounded-lg px-3 py-2 text-sm text-white focus:border-accent outline-none">
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="closeSettings()" class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium bg-accent text-white rounded-lg hover:bg-blue-600 transition-colors">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         let currentTab = 'baru';
 
@@ -275,6 +305,46 @@
                 });
                 document.getElementById('no-orders').classList.toggle('hidden', visibleCount > 0);
             }
+        }
+
+        function openSettings() {
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.add('hidden');
+        }
+
+        async function saveSettings(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerText = 'Menyimpan...';
+            btn.disabled = true;
+
+            const payload = {
+                mustikaApiKey: document.getElementById('mustikaApiKey').value,
+                telegramBotToken: document.getElementById('telegramBotToken').value,
+                telegramOwnerId: document.getElementById('telegramOwnerId').value
+            };
+
+            try {
+                const res = await fetch('/user/admin/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Pengaturan berhasil disimpan!');
+                    closeSettings();
+                } else {
+                    alert('Gagal menyimpan: ' + data.message);
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan.');
+            }
+            btn.innerText = 'Simpan';
+            btn.disabled = false;
         }
 
         // Initialize
