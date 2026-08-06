@@ -253,6 +253,13 @@
                 
                 <form id="settingsForm" onsubmit="saveSettings(event)" class="space-y-6">
                     <div>
+                        <label for="mustikaApiKey" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">MustikaPay API Key</label>
+                        <input type="text" id="mustikaApiKey" name="mustikaApiKey" value="<%= typeof mustikaApiKey !== 'undefined' ? mustikaApiKey : '' %>" 
+                               class="w-full bg-base border border-border text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-accent transition-colors font-mono" 
+                               placeholder="e.g. MP-123456789">
+                        <p class="text-[11px] text-gray-500 mt-1">Token API Key dari akun MustikaPay Anda.</p>
+                    </div>
+                    <div>
                         <label for="telegramBotToken" class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Telegram Bot Token</label>
                         <input type="text" id="telegramBotToken" name="telegramBotToken" value="<%= telegramBotToken %>" 
                                class="w-full bg-base border border-border text-white text-sm rounded-xl px-4 py-3 outline-none focus:border-accent transition-colors font-mono" 
@@ -475,6 +482,7 @@
             event.preventDefault();
             const botToken = document.getElementById('telegramBotToken').value;
             const ownerId = document.getElementById('telegramOwnerId').value;
+            const mustikaKey = document.getElementById('mustikaApiKey').value;
             const messageEl = document.getElementById('settingsMessage');
             
             messageEl.classList.add('hidden');
@@ -484,7 +492,7 @@
                 const response = await fetch('/user/admin/settings', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ telegramBotToken: botToken, telegramOwnerId: ownerId })
+                    body: JSON.stringify({ telegramBotToken: botToken, telegramOwnerId: ownerId, mustikaApiKey: mustikaKey })
                 });
 
                 const result = await response.json();
