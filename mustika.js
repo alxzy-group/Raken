@@ -26,9 +26,13 @@ async function createTransaction(orderId, amount) {
             throw new Error(`Gagal membuat transaksi MustikaPay: ${response.message || 'Unknown Error'}`);
         }
         
+        // MustikaPay directly returns fields on the response object
+        const urlObj = new URL(response.qr_url);
+        const qrString = urlObj.searchParams.get('data');
+
         return {
-            payment_number: response.data.qr_string,
-            ref_no: response.data.ref_no,
+            payment_number: qrString || response.qr_url, // fallback if data param is missing
+            ref_no: response.ref_no,
             expired_at: 'PERMANENT'
         };
     } catch (error) {
