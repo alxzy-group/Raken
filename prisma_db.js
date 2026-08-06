@@ -332,6 +332,58 @@ async function getActiveGroups(jenisBot) {
     }
 }
 
+// ====================
+// VOUCHER FUNCTIONS
+// ====================
+
+async function createVoucher(data) {
+    try {
+        return await prisma.voucher.create({ data });
+    } catch (error) {
+        console.error('Prisma createVoucher error:', error);
+        throw error;
+    }
+}
+
+async function getAllVouchers() {
+    try {
+        return await prisma.voucher.findMany({ orderBy: { createdAt: 'desc' } });
+    } catch (error) {
+        console.error('Prisma getAllVouchers error:', error);
+        return [];
+    }
+}
+
+async function getVoucherByCode(code) {
+    try {
+        return await prisma.voucher.findUnique({ where: { code } });
+    } catch (error) {
+        console.error('Prisma getVoucherByCode error:', error);
+        return null;
+    }
+}
+
+async function deleteVoucher(id) {
+    try {
+        return await prisma.voucher.delete({ where: { id: parseInt(id) } });
+    } catch (error) {
+        console.error('Prisma deleteVoucher error:', error);
+        throw error;
+    }
+}
+
+async function incrementVoucherUsage(id) {
+    try {
+        return await prisma.voucher.update({
+            where: { id: parseInt(id) },
+            data: { usedCount: { increment: 1 } }
+        });
+    } catch (error) {
+        console.error('Prisma incrementVoucherUsage error:', error);
+        throw error;
+    }
+}
+
 module.exports = { 
     prisma, 
     addOrder, 
@@ -345,5 +397,10 @@ module.exports = {
     getActiveGroups,
     getSetting,
     setSetting,
-    sendTelegramNotification
+    sendTelegramNotification,
+    createVoucher,
+    getAllVouchers,
+    getVoucherByCode,
+    deleteVoucher,
+    incrementVoucherUsage
 };

@@ -89,7 +89,7 @@ app.get('/', async (req, res) => {
 
 app.post('/checkout', async (req, res) => {
     try {
-        const { email, link_group, jenis_bot, tipe_order, paket } = req.body;
+        const { email, link_group, jenis_bot, tipe_order, paket, voucher_code } = req.body;
         const pricingData = config.PRICING || { store: {}, guild: {}, cc: {} };
         const infoGroups = config.INFO_GROUP_LINK || {};
         
@@ -97,10 +97,32 @@ app.post('/checkout', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Data tidak valid. Pastikan semua field terisi.' });
         }
 
-        const harga = pricingData[jenis_bot][paket].harga;
+        let harga = pricingData[jenis_bot][paket].harga;
         const hari = pricingData[jenis_bot][paket].hari;
         const orderId = 'ORD-' + Date.now();
         const groupInfoLink = infoGroups[jenis_bot] || '#';
+
+        let appliedVoucher = null;
+        if (voucher_code) {
+            const voucher = await prismaDb.getVoucherByCode(voucher_code.toUpperCase());
+            if (voucher && voucher.isActive && (voucher.maxUsage === 0 || voucher.usedCount < voucher.maxUsage)) {
+                let valid = true;
+                if (voucher.expiry && new Date(voucher.expiry) < new Date()) valid = false;
+                if (voucher.jenisBot !== 'all' && voucher.jenisBot !== jenis_bot) valid = false;
+                
+                if (valid) {
+                    if (voucher.type === 'percent') {
+                        harga = harga - (harga * (voucher.discount / 100));
+                    } else {
+                        harga = harga - voucher.discount;
+                    }
+                    if (harga < 0) harga = 0;
+                    appliedVoucher = voucher;
+                }
+            }
+        }
+        
+        harga = Math.round(harga);
 
         let trx;
         let finalStatus = 'PENDING';
@@ -133,9 +155,14 @@ app.post('/checkout', async (req, res) => {
             ref_no: trx.ref_no,
             expired_at: trx.expired_at,
             status: finalStatus,
+            voucher_code: appliedVoucher ? appliedVoucher.code : null,
             created_at: new Date().toISOString()
         };
         await prismaDb.addOrder(orderData);
+
+        if (appliedVoucher) {
+            await prismaDb.incrementVoucherUsage(appliedVoucher.id);
+        }
 
         res.json({
             success: true,
@@ -149,6 +176,35 @@ app.post('/checkout', async (req, res) => {
 
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/validate-voucher', async (req, res) => {
+    try {
+        const { code, jenis_bot } = req.body;
+        if (!code) return res.status(400).json({ error: 'Kode voucher kosong' });
+        
+        const voucher = await prismaDb.getVoucherByCode(code.toUpperCase());
+        if (!voucher) return res.status(404).json({ error: 'Voucher tidak ditemukan' });
+        
+        if (!voucher.isActive) return res.status(400).json({ error: 'Voucher sudah tidak aktif' });
+        
+        if (voucher.maxUsage > 0 && voucher.usedCount >= voucher.maxUsage) {
+            return res.status(400).json({ error: 'Batas penggunaan voucher sudah habis' });
+        }
+        
+        if (voucher.expiry && new Date(voucher.expiry) < new Date()) {
+            return res.status(400).json({ error: 'Voucher sudah kadaluwarsa' });
+        }
+        
+        if (voucher.jenisBot !== 'all' && voucher.jenisBot !== jenis_bot) {
+            return res.status(400).json({ error: `Voucher ini hanya untuk ${voucher.jenisBot.toUpperCase()}` });
+        }
+        
+        res.json({ success: true, discount: voucher.discount, type: voucher.type });
+    } catch (e) {
+        console.error('Validate voucher error:', e);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -323,13 +379,15 @@ app.get('/user/admin/dashboard', async (req, res) => {
         const telegramBotToken = await prismaDb.getSetting('telegram_bot_token') || '';
         const telegramOwnerId = await prismaDb.getSetting('telegram_owner_id') || '';
         const mustikaApiKey = await prismaDb.getSetting('mustika_api_key') || '';
+        const vouchers = await prismaDb.getAllVouchers();
         
         res.render('admin_dashboard', { 
             orders, 
             activeGroups, 
             telegramBotToken, 
             telegramOwnerId,
-            mustikaApiKey
+            mustikaApiKey,
+            vouchers
         });
     } catch (e) {
         console.error('Error rendering dashboard:', e);
@@ -349,6 +407,38 @@ app.post('/user/admin/settings', async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         console.error('Error saving settings:', e);
+        res.status(500).json({ success: false, message: e.message });
+    }
+});
+
+app.post('/user/admin/vouchers', async (req, res) => {
+    if (req.cookies.admin_token !== config.ADMIN_PASSWORD) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    try {
+        const { code, discount, maxUsage, expiry, jenisBot } = req.body;
+        await prismaDb.createVoucher({
+            code: code.toUpperCase(),
+            discount: parseFloat(discount),
+            type: 'percent',
+            maxUsage: parseInt(maxUsage) || 0,
+            expiry: expiry ? new Date(expiry) : null,
+            jenisBot: jenisBot || 'all'
+        });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ success: false, message: e.message });
+    }
+});
+
+app.delete('/user/admin/vouchers/:id', async (req, res) => {
+    if (req.cookies.admin_token !== config.ADMIN_PASSWORD) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+    try {
+        await prismaDb.deleteVoucher(req.params.id);
+        res.json({ success: true });
+    } catch (e) {
         res.status(500).json({ success: false, message: e.message });
     }
 });

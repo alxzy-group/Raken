@@ -31,6 +31,7 @@ model Order {
   expired_at     String?
   created_at     DateTime? @default(now())
   updated_at     DateTime? @updatedAt
+  voucher_code   String?
 
   // Relations
   group          Group?
@@ -120,5 +121,6 @@ model Voucher {
   usedCount Int       @default(0)
   expiry    DateTime?
   isActive  Boolean   @default(true)
+  jenisBot  String    @default("all")
   createdAt DateTime  @default(now())
 }
