@@ -1,100 +1,84 @@
 <!DOCTYPE html>
-<html lang="id" class="dark">
+<html lang="id">
 <head>
-    <script>
-        try {
-            if (localStorage.getItem('theme') === 'light') {
-                document.documentElement.classList.remove('dark');
-                document.documentElement.classList.add('light-theme');
-            }
-        } catch(e) {}
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | Ravenzena Bot</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { base: '#050505', surface: '#111111', border: '#262626', accent: '#3B82F6' }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #050505; color: #E5E7EB; }
-        .grid-lines { background-image: linear-gradient(to right, #111111 1px, transparent 1px), linear-gradient(to bottom, #111111 1px, transparent 1px); background-size: 40px 40px; }
-        
-        /* MAGIC LIGHT MODE */
-        html.light-theme {
-            filter: invert(1) hue-rotate(180deg);
-            background-color: #FAFAFA;
-        }
-        html.light-theme img, 
-        html.light-theme .re-invert {
-            filter: invert(1) hue-rotate(180deg); 
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Masuk ke ruang kerja admin Ravenzena Bot.">
+<title>Admin Login | Ravenzena Bot</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
-<body class="antialiased min-h-screen flex items-center justify-center p-6 relative">
-    <div class="fixed inset-0 grid-lines z-0 opacity-30"></div>
+<body>
+<div id="toast-container" class="toast-container"></div>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px; position:relative; overflow:hidden;">
+    
+    <!-- tsParticles Container -->
+    <div id="tsparticles" style="position: absolute; inset: 0; z-index: 0;"></div>
 
-    <div class="fixed top-4 right-4 z-50">
-        <button onclick="toggleTheme()" class="text-gray-400 hover:text-white focus:outline-none flex items-center justify-center p-2 rounded-full bg-surface border border-border shadow-lg">
-            <svg class="w-6 h-6 text-accent theme-icon-sun" style="display:none;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            <svg class="w-6 h-6 theme-icon-moon" style="display:block;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-        </button>
-    </div>
-    <div class="relative z-10 w-full max-w-md">
-        <div class="bg-surface border border-border p-8 rounded-3xl shadow-2xl">
-            <div class="text-center mb-8">
-                <img src="/favicon.png" alt="Logo" class="w-12 h-12 mx-auto mb-4 rounded-xl">
-                <h1 class="text-2xl font-bold text-white">Admin Access</h1>
-                <p class="text-gray-400 text-sm">Silakan login untuk mengelola pesanan.</p>
+    <div style="width:100%;max-width:380px; position: relative; z-index: 10;">
+        <div style="text-align:center;margin-bottom:28px">
+            <div class="brand-icon" style="width:52px;height:52px;font-size:24px;margin:0 auto 14px">🚀</div>
+            <h1 style="font-size:22px;font-weight:800;letter-spacing:-0.03em">Admin Portal</h1>
+            <p style="color:var(--text-muted);font-size:13.5px;margin-top:6px">System Access</p>
+        </div>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: var(--danger); padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; text-align: center;">
+            <i class="fas fa-times-circle"></i> <%= error %>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-body">
+                <form action="/user/admin" method="POST">
+                    <div class="form-group" style="margin-bottom: 16px;">
+                        <label style="font-size: 13px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 8px;">Username</label>
+                        <input type="text" name="username" value="admin" style="width: 100%; background: var(--bg-card2); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; outline: none; transition: border-color 0.2s;" required autocomplete="username">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 24px;">
+                        <label style="font-size: 13px; font-weight: 500; color: var(--text-muted); display: block; margin-bottom: 8px;">Password</label>
+                        <input type="password" name="password" placeholder="••••••••" style="width: 100%; background: var(--bg-card2); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; outline: none; transition: border-color 0.2s;" required autocomplete="current-password" autofocus>
+                    </div>
+                    <button type="submit" class="btn-glow" style="width: 100%; justify-content: center; padding: 12px; border-radius: 8px; font-size: 14px;">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
+                </form>
             </div>
-            <form action="/user/admin" method="POST" class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
-                    <input type="text" name="username" required value="admin" class="w-full bg-base border border-border rounded-xl px-4 py-3 text-white focus:border-accent outline-none transition-all">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
-                    <input type="password" name="password" required class="w-full bg-base border border-border rounded-xl px-4 py-3 text-white focus:border-accent outline-none transition-all">
-                </div>
-                <% if (typeof error !== 'undefined' && error) { %>
-                    <p class="text-red-500 text-xs text-center"><%= error %></p>
-                <% } %>
-                <button type="submit" class="w-full bg-white text-black font-bold py-4 rounded-xl hover:bg-gray-200 transition-all">Login</button>
-            </form>
+        </div>
+
+        <div style="text-align:center;margin-top:16px">
+            <a href="/" style="color:var(--text-muted);font-size:13px;text-decoration:none">← Kembali ke Beranda</a>
         </div>
     </div>
+</div>
 
-    <script>
-        function toggleTheme() {
-            const isDark = document.documentElement.classList.contains('dark');
-            if (isDark) {
-                document.documentElement.classList.remove('dark');
-                document.documentElement.classList.add('light-theme');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                document.documentElement.classList.remove('light-theme');
-                localStorage.setItem('theme', 'dark');
-            }
-            updateThemeIcons();
-        }
-
-        function updateThemeIcons() {
-            const isDark = document.documentElement.classList.contains('dark');
-            document.querySelectorAll('.theme-icon-sun').forEach(el => el.style.display = isDark ? 'block' : 'none');
-            document.querySelectorAll('.theme-icon-moon').forEach(el => el.style.display = isDark ? 'none' : 'block');
-        }
+<script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.0.6/tsparticles.slim.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        tsParticles.load("tsparticles", {
+            background: { color: { value: "transparent" } },
+            fpsLimit: 60,
+            interactivity: {
+                events: { onHover: { enable: true, mode: "grab" }, resize: true },
+                modes: { grab: { distance: 200, links: { opacity: 0.8, color: "#3B82F6" } } }
+            },
+            particles: {
+                color: { value: "#3B82F6" },
+                links: { color: "#3B82F6", distance: 160, enable: true, opacity: 0.2, width: 1.5 },
+                move: { enable: true, speed: 1, direction: "none", outModes: { default: "bounce" } },
+                number: { density: { enable: true, area: 600 }, value: 60 },
+                opacity: { value: 0.4 },
+                size: { value: { min: 1, max: 2.5 } }
+            },
+            detectRetina: true
+        });
         
-        document.addEventListener('DOMContentLoaded', updateThemeIcons);
-    </script>
+        // Input focus styling manually if css class isn't doing it
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => input.style.borderColor = 'var(--accent)');
+            input.addEventListener('blur', () => input.style.borderColor = 'var(--border)');
+        });
+    });
+</script>
 </body>
 </html>

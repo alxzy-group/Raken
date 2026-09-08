@@ -6,6 +6,11 @@ if (process.env.NODE_ENV !== 'production') {
     global.prisma = prisma;
 }
 
+// Enable WAL mode to prevent SQLite DB corruption and database is locked errors
+prisma.$queryRawUnsafe('PRAGMA journal_mode = WAL;')
+    .then(() => prisma.$executeRawUnsafe('PRAGMA synchronous = NORMAL;'))
+    .catch(e => console.error("SQLite PRAGMA error:", e));
+
 async function addOrder(orderData) {
     try {
         // Ensure harga is an integer
