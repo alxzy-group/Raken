@@ -133,8 +133,11 @@ app.get('/', async (req, res) => {
     const siteSettings = {
         siteName: await prismaDb.getSetting('site_name') || 'Ravenzena Bot',
         logoUrl: await prismaDb.getSetting('site_logo_url') || '/favicon.png',
+        faviconUrl: await prismaDb.getSetting('site_favicon_url') || await prismaDb.getSetting('site_logo_url') || '/favicon.png',
         heroImageUrl: await prismaDb.getSetting('site_hero_image_url') || 'https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg',
-        siteDescription: await prismaDb.getSetting('site_description') || 'Bot WhatsApp yang membantu komunitas tetap rapi, aktif, dan mudah dikelola.'
+        siteDescription: await prismaDb.getSetting('site_description') || 'Bot WhatsApp yang membantu komunitas tetap rapi, aktif, dan mudah dikelola.',
+        whatsappNumber: await prismaDb.getSetting('site_whatsapp_number') || '',
+        freeGroupLink: await prismaDb.getSetting('site_free_group_link') || ''
     };
 
     if (req.query.checkout) {
@@ -483,8 +486,11 @@ app.get('/user/admin/dashboard', requireAdmin, async (req, res) => {
         const siteSettings = {
             siteName: await prismaDb.getSetting('site_name') || 'Ravenzena Bot',
             logoUrl: await prismaDb.getSetting('site_logo_url') || '/favicon.png',
+            faviconUrl: await prismaDb.getSetting('site_favicon_url') || '',
             heroImageUrl: await prismaDb.getSetting('site_hero_image_url') || '',
-            siteDescription: await prismaDb.getSetting('site_description') || ''
+            siteDescription: await prismaDb.getSetting('site_description') || '',
+            whatsappNumber: await prismaDb.getSetting('site_whatsapp_number') || '',
+            freeGroupLink: await prismaDb.getSetting('site_free_group_link') || ''
         };
 
         res.render('admin_dashboard', {
@@ -525,26 +531,33 @@ app.post('/user/admin/pricing', requireAdmin, async (req, res) => {
     }
 });
 
-app.post('/user/admin/settings', requireAdmin, async (req, res) => {
+app.post('/user/admin/settings', async (req, res) => {
     try {
-        const { telegramBotToken, telegramOwnerId, mustikaApiKey, siteName, logoUrl, heroImageUrl, siteDescription } = req.body;
-        if (![logoUrl, heroImageUrl].every(isValidExternalImage)) {
-            return res.status(400).json({ success: false, message: 'URL gambar harus menggunakan http atau https yang valid.' });
+        const { telegramBotToken, telegramOwnerId, mustikaApiKey, siteName, logoUrl, faviconUrl, heroImageUrl, siteDescription, whatsappNumber, freeGroupLink } = req.body;
+
+        if (![logoUrl, faviconUrl, heroImageUrl].every(isValidExternalImage)) {
+            return res.status(400).json({ success: false, message: 'URL gambar harus menggunakan http atau https yang valid atau path relatif.' });
         }
-        if (String(siteName || '').length > 80 || String(siteDescription || '').length > 300) {
-            return res.status(400).json({ success: false, message: 'Nama atau deskripsi terlalu panjang.' });
-        }
+
         await prismaDb.setSetting('telegram_bot_token', String(telegramBotToken || '').trim());
-        await prismaDb.setSetting('mustika_api_key', String(mustikaApiKey || '').trim());
         await prismaDb.setSetting('telegram_owner_id', String(telegramOwnerId || '').trim());
+        await prismaDb.setSetting('mustika_api_key', String(mustikaApiKey || '').trim());
+        
         await prismaDb.setSetting('site_name', String(siteName || '').trim());
         await prismaDb.setSetting('site_logo_url', String(logoUrl || '').trim());
+        await prismaDb.setSetting('site_favicon_url', String(faviconUrl || '').trim());
         await prismaDb.setSetting('site_hero_image_url', String(heroImageUrl || '').trim());
         await prismaDb.setSetting('site_description', String(siteDescription || '').trim());
-        res.json({ success: true });
-    } catch (e) {
-        console.error('Error saving settings:', e);
-        res.status(500).json({ success: false, message: e.message });
+        
+        let cleanedWa = String(whatsappNumber || '').replace(/\D/g, '');
+        if (cleanedWa.startsWith('0')) cleanedWa = '62' + cleanedWa.substring(1);
+        await prismaDb.setSetting('site_whatsapp_number', cleanedWa);
+        await prismaDb.setSetting('site_free_group_link', String(freeGroupLink || '').trim());
+
+        res.json({ success: true, message: 'Pengaturan berhasil disimpan!' });
+    } catch (error) {
+        console.error('Save Settings Error:', error);
+        res.status(500).json({ success: false, message: 'Gagal menyimpan pengaturan.' });
     }
 });
 

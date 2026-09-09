@@ -426,9 +426,21 @@
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL Logo</label>
                                     <input type="url" id="logoUrl" value="<%= siteSettings && siteSettings.logoUrl ? siteSettings.logoUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
                                 </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL Favicon</label>
+                                    <input type="url" id="faviconUrl" value="<%= siteSettings && siteSettings.faviconUrl ? siteSettings.faviconUrl : '' %>" placeholder="/favicon.png" class="premium-input w-full rounded-lg px-4 py-3">
+                                </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL Gambar Hero (Thumbnail)</label>
                                     <input type="url" id="heroImageUrl" value="<%= siteSettings && siteSettings.heroImageUrl ? siteSettings.heroImageUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Nomor WhatsApp Utama</label>
+                                    <input type="text" id="whatsappNumber" value="<%= siteSettings && siteSettings.whatsappNumber ? siteSettings.whatsappNumber : '' %>" placeholder="628..." class="premium-input w-full rounded-lg px-4 py-3">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Link Grup Gratis</label>
+                                    <input type="url" id="freeGroupLink" value="<%= siteSettings && siteSettings.freeGroupLink ? siteSettings.freeGroupLink : '' %>" placeholder="https://chat.whatsapp.com/..." class="premium-input w-full rounded-lg px-4 py-3">
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Deskripsi Website</label>
@@ -638,7 +650,10 @@
                 mustikaApiKey: document.getElementById('mustikaApiKey').value,
                 siteName: document.getElementById('siteName').value,
                 logoUrl: document.getElementById('logoUrl').value,
+                faviconUrl: document.getElementById('faviconUrl').value,
                 heroImageUrl: document.getElementById('heroImageUrl').value,
+                whatsappNumber: document.getElementById('whatsappNumber').value,
+                freeGroupLink: document.getElementById('freeGroupLink').value,
                 siteDescription: document.getElementById('siteDescription').value
             };
 
