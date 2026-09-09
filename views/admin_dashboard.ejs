@@ -370,6 +370,10 @@
                                     <input type="url" id="logoUrl" value="<%= siteSettings && siteSettings.logoUrl ? siteSettings.logoUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
                                 </div>
                                 <div class="md:col-span-2">
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL Gambar Hero (Thumbnail)</label>
+                                    <input type="url" id="heroImageUrl" value="<%= siteSettings && siteSettings.heroImageUrl ? siteSettings.heroImageUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
+                                </div>
+                                <div class="md:col-span-2">
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Deskripsi Website</label>
                                     <textarea id="siteDescription" rows="3" class="premium-input w-full rounded-lg px-4 py-3"><%= siteSettings && siteSettings.siteDescription ? siteSettings.siteDescription : '' %></textarea>
                                 </div>
@@ -546,6 +550,7 @@
                 mustikaApiKey: document.getElementById('mustikaApiKey').value,
                 siteName: document.getElementById('siteName').value,
                 logoUrl: document.getElementById('logoUrl').value,
+                heroImageUrl: document.getElementById('heroImageUrl').value,
                 siteDescription: document.getElementById('siteDescription').value
             };
 
