@@ -55,6 +55,17 @@
             color: var(--text);
         }
         
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+        }
+        @media (min-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
         /* Light mode specific overrides */
         html.light-theme .grid-lines {
             background-image:
@@ -636,8 +647,13 @@
             max-width: 1100px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 40px;
+        }
+        @media (min-width: 768px) {
+            .footer-grid {
+                grid-template-columns: 2fr 1fr 1fr;
+            }
         }
         .footer-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
         .footer-links { list-style: none; padding: 0; }
@@ -1118,7 +1134,7 @@
                 </div>
 
                 <form @submit.prevent="submitForm" style="padding:32px;" :style="isLoading ? 'opacity:.5;pointer-events:none' : ''">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+                    <div class="checkout-grid">
                         <!-- Left column -->
                         <div>
                             <h4 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
