@@ -95,6 +95,18 @@
 
         .fade-in { animation: fadeIn 0.3s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile Nav Active State */
+        .nav-item-mobile {
+            transition: all 0.2s ease;
+        }
+        .nav-item-mobile.active {
+            color: #d8b4fe;
+        }
+        .nav-item-mobile.active i {
+            color: #a855f7;
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-purple-500/30">
@@ -216,6 +228,51 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Active Groups Table -->
+                <div class="glass-card overflow-hidden mt-8">
+                    <div class="p-6 border-b border-white/10 flex items-center gap-3">
+                        <i class="fas fa-users text-green-400"></i>
+                        <h3 class="text-lg font-semibold text-white">Daftar Grup Aktif</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm text-zinc-300">
+                            <thead class="bg-white/5 text-zinc-400 font-medium">
+                                <tr>
+                                    <th class="px-6 py-4">Grup</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4">Order ID</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-white/5">
+                                <% if(activeGroups.length === 0) { %>
+                                    <tr><td colspan="3" class="px-6 py-12 text-center text-zinc-500">Belum ada grup aktif.</td></tr>
+                                <% } else { %>
+                                    <% activeGroups.forEach(group => { %>
+                                    <tr class="hover:bg-white/5 transition-colors">
+                                        <td class="px-6 py-4 flex items-center gap-3">
+                                            <% if(group.photo) { %>
+                                                <img src="<%= group.photo %>" alt="Grup Photo" class="w-10 h-10 rounded-full object-cover border border-white/10">
+                                            <% } else { %>
+                                                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10"><i class="fas fa-users text-zinc-500"></i></div>
+                                            <% } %>
+                                            <div>
+                                                <div class="font-semibold text-white"><%= group.name || 'Grup Tidak Dikenal' %></div>
+                                                <div class="text-xs text-zinc-500 font-mono"><%= group.jid || 'N/A' %></div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-2.5 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-bold">AKTIF</span>
+                                        </td>
+                                        <td class="px-6 py-4 font-mono text-xs text-purple-400"><%= group.orderId %></td>
+                                    </tr>
+                                    <% }) %>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
 
             <!-- SECTION: PRICING -->
@@ -392,6 +449,26 @@
         </main>
     </div>
 
+    <!-- Mobile Bottom Nav -->
+    <div class="md:hidden fixed bottom-0 w-full bg-[#09090b]/90 backdrop-blur-xl border-t border-white/10 z-50 flex justify-around p-2 pb-4">
+        <div class="nav-item-mobile active flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-dashboard" onclick="switchTab('section-dashboard')">
+            <i class="fas fa-home text-xl transition-all"></i>
+            <span class="text-[10px] font-semibold">Home</span>
+        </div>
+        <div class="nav-item-mobile flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-pricing" onclick="switchTab('section-pricing')">
+            <i class="fas fa-tags text-xl transition-all"></i>
+            <span class="text-[10px] font-semibold">Harga</span>
+        </div>
+        <div class="nav-item-mobile flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-vouchers" onclick="switchTab('section-vouchers')">
+            <i class="fas fa-ticket-alt text-xl transition-all"></i>
+            <span class="text-[10px] font-semibold">Voucher</span>
+        </div>
+        <div class="nav-item-mobile flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-settings" onclick="switchTab('section-settings')">
+            <i class="fas fa-cog text-xl transition-all"></i>
+            <span class="text-[10px] font-semibold">Setelan</span>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script>
         // Tab Navigation Logic
@@ -402,6 +479,17 @@
                     el.classList.add('active');
                 } else {
                     el.classList.remove('active');
+                }
+            });
+
+            // Update mobile nav items
+            document.querySelectorAll('.nav-item-mobile').forEach(el => {
+                if(el.dataset.target === targetId) {
+                    el.classList.add('active');
+                    el.classList.replace('text-zinc-500', 'text-purple-400');
+                } else {
+                    el.classList.remove('active');
+                    el.classList.replace('text-purple-400', 'text-zinc-500');
                 }
             });
 
