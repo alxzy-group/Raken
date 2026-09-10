@@ -424,19 +424,49 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL Logo</label>
-                                    <input type="url" id="logoUrl" value="<%= siteSettings && siteSettings.logoUrl ? siteSettings.logoUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
+                                    <div class="flex gap-2">
+                                        <input type="url" id="logoUrl" value="<%= siteSettings && siteSettings.logoUrl ? siteSettings.logoUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
+                                        <label class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all" title="Upload Logo">
+                                            <i class="fas fa-upload"></i>
+                                            <input type="file" class="hidden" onchange="uploadImage(this, 'logoUrl', false)">
+                                        </label>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL Favicon</label>
-                                    <input type="url" id="faviconUrl" value="<%= siteSettings && siteSettings.faviconUrl ? siteSettings.faviconUrl : '' %>" placeholder="/favicon.png" class="premium-input w-full rounded-lg px-4 py-3">
+                                    <div class="flex gap-2">
+                                        <input type="url" id="faviconUrl" value="<%= siteSettings && siteSettings.faviconUrl ? siteSettings.faviconUrl : '' %>" placeholder="/favicon.png" class="premium-input w-full rounded-lg px-4 py-3">
+                                        <label class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all" title="Upload Favicon (Auto convert to ICO)">
+                                            <i class="fas fa-upload"></i>
+                                            <input type="file" class="hidden" onchange="uploadImage(this, 'faviconUrl', true)">
+                                        </label>
+                                    </div>
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">URL Gambar Hero (Thumbnail)</label>
-                                    <input type="url" id="heroImageUrl" value="<%= siteSettings && siteSettings.heroImageUrl ? siteSettings.heroImageUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
+                                    <div class="flex gap-2">
+                                        <input type="url" id="heroImageUrl" value="<%= siteSettings && siteSettings.heroImageUrl ? siteSettings.heroImageUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
+                                        <label class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all" title="Upload Gambar Hero">
+                                            <i class="fas fa-upload"></i>
+                                            <input type="file" class="hidden" onchange="uploadImage(this, 'heroImageUrl', false)">
+                                        </label>
+                                    </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Nomor WhatsApp Utama</label>
-                                    <input type="text" id="whatsappNumber" value="<%= siteSettings && siteSettings.whatsappNumber ? siteSettings.whatsappNumber : '' %>" placeholder="628..." class="premium-input w-full rounded-lg px-4 py-3">
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Nomor WhatsApp 1</label>
+                                    <input type="text" id="whatsappNumber1" value="<%= siteSettings && siteSettings.whatsappNumber1 ? siteSettings.whatsappNumber1 : '' %>" placeholder="628..." class="premium-input w-full rounded-lg px-4 py-3">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Nomor WhatsApp 2 (Opsional)</label>
+                                    <input type="text" id="whatsappNumber2" value="<%= siteSettings && siteSettings.whatsappNumber2 ? siteSettings.whatsappNumber2 : '' %>" placeholder="628..." class="premium-input w-full rounded-lg px-4 py-3">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Nomor WhatsApp 3 (Opsional)</label>
+                                    <input type="text" id="whatsappNumber3" value="<%= siteSettings && siteSettings.whatsappNumber3 ? siteSettings.whatsappNumber3 : '' %>" placeholder="628..." class="premium-input w-full rounded-lg px-4 py-3">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Nomor WhatsApp 4 (Opsional)</label>
+                                    <input type="text" id="whatsappNumber4" value="<%= siteSettings && siteSettings.whatsappNumber4 ? siteSettings.whatsappNumber4 : '' %>" placeholder="628..." class="premium-input w-full rounded-lg px-4 py-3">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Link Grup Gratis</label>
@@ -639,6 +669,47 @@
         }
 
         // SETTINGS LOGIC
+        async function uploadImage(input, targetId, convertToIco) {
+            if(!input.files || input.files.length === 0) return;
+            const file = input.files[0];
+            const msg = document.getElementById('settingsMessage');
+            const targetInput = document.getElementById(targetId);
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            if (convertToIco) formData.append('convertToIco', 'true');
+
+            const originalValue = targetInput.value;
+            targetInput.value = 'Mengupload...';
+            
+            try {
+                const res = await fetch('/user/admin/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if(data.success) {
+                    targetInput.value = data.url;
+                    msg.innerText = "Gambar berhasil diupload!";
+                    msg.className = "mb-6 px-4 py-3 rounded-lg text-sm font-medium bg-green-500/10 text-green-400 border border-green-500/20";
+                    msg.classList.remove('hidden');
+                } else {
+                    targetInput.value = originalValue;
+                    msg.innerText = data.message || "Gagal mengupload.";
+                    msg.className = "mb-6 px-4 py-3 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20";
+                    msg.classList.remove('hidden');
+                }
+            } catch(err) {
+                targetInput.value = originalValue;
+                msg.innerText = "Koneksi terputus saat upload.";
+                msg.className = "mb-6 px-4 py-3 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20";
+                msg.classList.remove('hidden');
+            }
+            
+            // Clear file input so same file can be uploaded again if needed
+            input.value = '';
+        }
+
         async function saveSettings(e) {
             e.preventDefault();
             const btn = document.getElementById('settingsSubmit');
@@ -652,7 +723,10 @@
                 logoUrl: document.getElementById('logoUrl').value,
                 faviconUrl: document.getElementById('faviconUrl').value,
                 heroImageUrl: document.getElementById('heroImageUrl').value,
-                whatsappNumber: document.getElementById('whatsappNumber').value,
+                whatsappNumber1: document.getElementById('whatsappNumber1').value,
+                whatsappNumber2: document.getElementById('whatsappNumber2').value,
+                whatsappNumber3: document.getElementById('whatsappNumber3').value,
+                whatsappNumber4: document.getElementById('whatsappNumber4').value,
                 freeGroupLink: document.getElementById('freeGroupLink').value,
                 siteDescription: document.getElementById('siteDescription').value
             };

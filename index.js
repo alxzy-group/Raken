@@ -6,6 +6,23 @@ const prismaDb = require('./prisma_db');
 const mustika = require('./mustika');
 const config = require('./config');
 const crypto = require('crypto');
+const multer = require('multer');
+const pngToIco = require('png-to-ico');
+const fs = require('fs');
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const dir = path.join(__dirname, 'public', 'uploads');
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({ storage: storage });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -136,7 +153,10 @@ app.get('/', async (req, res) => {
         faviconUrl: await prismaDb.getSetting('site_favicon_url') || await prismaDb.getSetting('site_logo_url') || '/favicon.png',
         heroImageUrl: await prismaDb.getSetting('site_hero_image_url') || 'https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg',
         siteDescription: await prismaDb.getSetting('site_description') || 'Bot WhatsApp yang membantu komunitas tetap rapi, aktif, dan mudah dikelola.',
-        whatsappNumber: await prismaDb.getSetting('site_whatsapp_number') || '',
+        whatsappNumber1: await prismaDb.getSetting('site_wa_1') || '',
+        whatsappNumber2: await prismaDb.getSetting('site_wa_2') || '',
+        whatsappNumber3: await prismaDb.getSetting('site_wa_3') || '',
+        whatsappNumber4: await prismaDb.getSetting('site_wa_4') || '',
         freeGroupLink: await prismaDb.getSetting('site_free_group_link') || ''
     };
 
@@ -489,7 +509,10 @@ app.get('/user/admin/dashboard', requireAdmin, async (req, res) => {
             faviconUrl: await prismaDb.getSetting('site_favicon_url') || '',
             heroImageUrl: await prismaDb.getSetting('site_hero_image_url') || '',
             siteDescription: await prismaDb.getSetting('site_description') || '',
-            whatsappNumber: await prismaDb.getSetting('site_whatsapp_number') || '',
+            whatsappNumber1: await prismaDb.getSetting('site_wa_1') || '',
+            whatsappNumber2: await prismaDb.getSetting('site_wa_2') || '',
+            whatsappNumber3: await prismaDb.getSetting('site_wa_3') || '',
+            whatsappNumber4: await prismaDb.getSetting('site_wa_4') || '',
             freeGroupLink: await prismaDb.getSetting('site_free_group_link') || ''
         };
 
@@ -531,9 +554,42 @@ app.post('/user/admin/pricing', requireAdmin, async (req, res) => {
     }
 });
 
+app.post('/user/admin/upload', upload.single('file'), async (req, res) => {
+    try {
+        if (!getAdminSession(req)) return res.status(403).json({ success: false, message: 'Akses ditolak.' });
+        
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Tidak ada file yang diupload.' });
+        }
+        
+        let fileUrl = `/uploads/${req.file.filename}`;
+        
+        if (req.body.convertToIco === 'true') {
+            try {
+                // Determine source for png-to-ico (only works with png directly or buf)
+                // Since png-to-ico expects png, we assume it's valid. If it fails, fallback to png URL.
+                const icoPath = path.join(__dirname, 'public', 'uploads', Date.now() + '.ico');
+                const buf = await pngToIco(req.file.path);
+                fs.writeFileSync(icoPath, buf);
+                fileUrl = `/uploads/${path.basename(icoPath)}`;
+            } catch (err) {
+                console.error('Failed to convert to ICO:', err);
+                // Fallback to the original uploaded file if conversion fails
+            }
+        }
+        
+        res.json({ success: true, url: fileUrl });
+    } catch (e) {
+        console.error('Upload Error:', e);
+        res.status(500).json({ success: false, message: 'Gagal mengupload file.' });
+    }
+});
+
 app.post('/user/admin/settings', async (req, res) => {
     try {
-        const { telegramBotToken, telegramOwnerId, mustikaApiKey, siteName, logoUrl, faviconUrl, heroImageUrl, siteDescription, whatsappNumber, freeGroupLink } = req.body;
+        if (!getAdminSession(req)) return res.status(403).json({ success: false, message: 'Akses ditolak.' });
+
+        const { telegramBotToken, telegramOwnerId, mustikaApiKey, siteName, logoUrl, faviconUrl, heroImageUrl, siteDescription, whatsappNumber1, whatsappNumber2, whatsappNumber3, whatsappNumber4, freeGroupLink } = req.body;
 
         if (![logoUrl, faviconUrl, heroImageUrl].every(isValidExternalImage)) {
             return res.status(400).json({ success: false, message: 'URL gambar harus menggunakan http atau https yang valid atau path relatif.' });
@@ -549,9 +605,16 @@ app.post('/user/admin/settings', async (req, res) => {
         await prismaDb.setSetting('site_hero_image_url', String(heroImageUrl || '').trim());
         await prismaDb.setSetting('site_description', String(siteDescription || '').trim());
         
-        let cleanedWa = String(whatsappNumber || '').replace(/\D/g, '');
-        if (cleanedWa.startsWith('0')) cleanedWa = '62' + cleanedWa.substring(1);
-        await prismaDb.setSetting('site_whatsapp_number', cleanedWa);
+        const clean = num => {
+            let cl = String(num || '').replace(/\D/g, '');
+            if (cl.startsWith('0')) cl = '62' + cl.substring(1);
+            return cl;
+        };
+        await prismaDb.setSetting('site_wa_1', clean(whatsappNumber1));
+        await prismaDb.setSetting('site_wa_2', clean(whatsappNumber2));
+        await prismaDb.setSetting('site_wa_3', clean(whatsappNumber3));
+        await prismaDb.setSetting('site_wa_4', clean(whatsappNumber4));
+        
         await prismaDb.setSetting('site_free_group_link', String(freeGroupLink || '').trim());
 
         res.json({ success: true, message: 'Pengaturan berhasil disimpan!' });
