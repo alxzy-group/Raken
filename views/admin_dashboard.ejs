@@ -108,6 +108,8 @@
             transform: scale(1.1);
         }
     </style>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="antialiased selection:bg-purple-500/30">
 
@@ -134,6 +136,9 @@
                 <div class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 ml-2">Main</div>
                 <div class="nav-item active flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-zinc-300" data-target="section-dashboard" onclick="switchTab('section-dashboard')">
                     <i class="fas fa-home w-5 text-center"></i> Dashboard
+                </div>
+                <div class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-zinc-300" data-target="section-groups" onclick="switchTab('section-groups')">
+                    <i class="fas fa-users w-5 text-center"></i> Grup Aktif
                 </div>
 
                 <div class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 ml-2 mt-6">Konfigurasi</div>
@@ -188,6 +193,27 @@
                     </div>
                 </div>
 
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="glass-card p-6 lg:col-span-2">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-white">Tren Pesanan</h3>
+                            <div class="text-xs font-semibold text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20">7 Hari Terakhir</div>
+                        </div>
+                        <div class="relative h-64 w-full">
+                            <canvas id="ordersChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-card p-6 lg:col-span-1">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-white">Distribusi Paket</h3>
+                        </div>
+                        <div class="relative h-64 w-full flex items-center justify-center">
+                            <canvas id="packageChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="glass-card overflow-hidden">
                     <div class="p-6 border-b border-white/10 flex items-center gap-3">
                         <i class="fas fa-list text-purple-400"></i>
@@ -229,8 +255,15 @@
                     </div>
                 </div>
 
+            </div>
+
+            <!-- SECTION: GROUPS -->
+            <div id="section-groups" class="tab-content hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <h2 class="text-3xl font-extrabold text-white tracking-tight">Grup Aktif</h2>
+                </div>
                 <!-- Active Groups Table -->
-                <div class="glass-card overflow-hidden mt-8">
+                <div class="glass-card overflow-hidden">
                     <div class="p-6 border-b border-white/10 flex items-center gap-3">
                         <i class="fas fa-users text-green-400"></i>
                         <h3 class="text-lg font-semibold text-white">Daftar Grup Aktif</h3>
@@ -272,7 +305,6 @@
                         </table>
                     </div>
                 </div>
-
             </div>
 
             <!-- SECTION: PRICING -->
@@ -496,6 +528,10 @@
         <div class="nav-item-mobile active flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-dashboard" onclick="switchTab('section-dashboard')">
             <i class="fas fa-home text-xl transition-all"></i>
             <span class="text-[10px] font-semibold">Home</span>
+        </div>
+        <div class="nav-item-mobile flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-groups" onclick="switchTab('section-groups')">
+            <i class="fas fa-users text-xl transition-all"></i>
+            <span class="text-[10px] font-semibold">Grup</span>
         </div>
         <div class="nav-item-mobile flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-pricing" onclick="switchTab('section-pricing')">
             <i class="fas fa-tags text-xl transition-all"></i>
@@ -760,6 +796,153 @@
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> Simpan Pengaturan';
             }
         }
+
+        // --- Chart.js Initialization ---
+        function initCharts(orders) {
+            if (!orders || orders.length === 0) return;
+
+            // 1. Process for Trend Chart (Last 7 Days)
+            const trendData = {};
+            for(let i=6; i>=0; i--){
+                let d = new Date();
+                d.setDate(d.getDate() - i);
+                let dateStr = d.toISOString().split('T')[0];
+                trendData[dateStr] = 0;
+            }
+
+            orders.forEach(o => {
+                let d = new Date(o.created_at);
+                let dateStr = d.toISOString().split('T')[0];
+                if(trendData[dateStr] !== undefined) {
+                    trendData[dateStr] += o.price || 0;
+                }
+            });
+
+            const labels = Object.keys(trendData).map(d => d.substring(5)); // MM-DD
+            const dataPoints = Object.values(trendData);
+
+            const ctxOrders = document.getElementById('ordersChart').getContext('2d');
+            
+            // Create gradient
+            let gradient = ctxOrders.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(168, 85, 247, 0.5)'); // purple-500
+            gradient.addColorStop(1, 'rgba(168, 85, 247, 0.0)');
+
+            new Chart(ctxOrders, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Pendapatan (Rp)',
+                        data: dataPoints,
+                        borderColor: '#a855f7',
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#a855f7',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(24, 24, 27, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#d8b4fe',
+                            borderColor: 'rgba(255,255,255,0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                            ticks: { color: '#a1a1aa', font: { family: 'Inter', size: 11 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                            ticks: { 
+                                color: '#a1a1aa', 
+                                font: { family: 'Inter', size: 11 },
+                                callback: function(value) {
+                                    return 'Rp ' + (value/1000) + 'k';
+                                }
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // 2. Process for Pie Chart (Package Distribution)
+            const packageCount = { '1 Bulan': 0, '2 Bulan': 0, 'Lainnya': 0 };
+            orders.forEach(o => {
+                const pkg = (o.package || '').toLowerCase();
+                if(pkg.includes('1 bulan')) packageCount['1 Bulan']++;
+                else if(pkg.includes('2 bulan')) packageCount['2 Bulan']++;
+                else packageCount['Lainnya']++;
+            });
+
+            const ctxPkg = document.getElementById('packageChart').getContext('2d');
+            new Chart(ctxPkg, {
+                type: 'doughnut',
+                data: {
+                    labels: ['1 Bulan', '2 Bulan', 'Lainnya'],
+                    datasets: [{
+                        data: [packageCount['1 Bulan'], packageCount['2 Bulan'], packageCount['Lainnya']],
+                        backgroundColor: [
+                            '#a855f7', // purple
+                            '#3b82f6', // blue
+                            '#3f3f46'  // zinc
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#d4d4d8',
+                                padding: 20,
+                                font: { family: 'Inter', size: 12 },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        <% if (locals.orders) { %>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ordersData = <%- JSON.stringify(orders) %>;
+                initCharts(ordersData);
+            });
+        <% } %>
     </script>
 </body>
 </html>

@@ -408,11 +408,12 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/orders/update', async (req, res) => {
     try {
         const { id, status } = req.body;
+        const normalizedStatus = String(status || '').toUpperCase();
         const allowedStatuses = ['PENDING', 'PAID', 'WAITING', 'COMPLETED', 'CANCELLED', 'ERROR'];
-        if (!id || !allowedStatuses.includes(status)) {
+        if (!id || !allowedStatuses.includes(normalizedStatus)) {
             return res.status(400).json({ error: 'Status order tidak valid' });
         }
-        await prismaDb.updateOrderStatus(id, status);
+        await prismaDb.updateOrderStatus(id, normalizedStatus);
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: 'Internal Server Error' });
