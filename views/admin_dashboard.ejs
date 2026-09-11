@@ -972,14 +972,30 @@
                         return;
                     }
                     
-                    let expireTime = parseInt(expireStr);
-                    if (isNaN(expireTime)) {
-                        timer.innerText = "Invalid Date";
+                    const lowerStr = expireStr.toLowerCase().trim();
+                    if (lowerStr === 'permanent' || lowerStr === 'unlimited' || lowerStr === '0' || lowerStr === '-1') {
+                        timer.innerText = "Permanent";
+                        timer.classList.remove('text-blue-400');
+                        timer.classList.add('text-zinc-500');
                         return;
                     }
                     
-                    // If it's a timestamp in seconds (10 digits), convert to ms
-                    if (expireTime < 10000000000) expireTime *= 1000;
+                    let expireTime;
+                    // If it's a numeric timestamp string
+                    if (!isNaN(expireStr) && String(expireStr).trim() !== '') {
+                        expireTime = parseInt(expireStr);
+                        if (expireTime < 10000000000) expireTime *= 1000;
+                    } else {
+                        // Otherwise try to parse as ISO date string
+                        expireTime = new Date(expireStr).getTime();
+                    }
+                    
+                    if (isNaN(expireTime)) {
+                        timer.innerText = "Invalid Date";
+                        timer.classList.remove('text-blue-400');
+                        timer.classList.add('text-red-400');
+                        return;
+                    }
                     
                     const distance = expireTime - now;
                     if (distance < 0) {
@@ -991,7 +1007,7 @@
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                        timer.innerText = `${days}h ${hours}m ${minutes}s`;
+                        timer.innerText = `${days} Hari ${hours} Jam ${minutes} Menit ${seconds} Detik`;
                     }
                 });
             }
