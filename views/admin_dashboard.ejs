@@ -295,18 +295,18 @@
                                         <!-- Name -->
                                         <h4 class="text-base font-extrabold text-white truncate uppercase tracking-wide"><%= group.name || 'GRUP TIDAK DIKENAL' %></h4>
                                         
-                                        <!-- Member Count -->
+                                        <!-- Bot Type -->
                                         <div class="text-[13px] text-zinc-400 mt-0.5 flex items-center gap-1.5 font-medium">
-                                            <i class="fa-solid fa-user-group text-[11px]"></i>
-                                            <span><%= group.memberCount || 0 %> member</span>
+                                            <i class="fa-solid fa-robot text-[11px]"></i>
+                                            <span class="capitalize"><%= group.jenisBot || 'Bot' %></span>
                                         </div>
                                         
                                         <!-- Timer / Order ID -->
                                         <div class="mt-2.5 flex items-center gap-2">
                                             <% if(group.expiredAt) { %>
-                                                <div class="countdown-timer inline-flex items-center px-2.5 py-1 bg-[#1a1a1a] rounded-md font-mono text-[11px] font-bold text-zinc-300 border border-white/5" data-expire="<%= group.expiredAt %>">masa aktif ...</div>
+                                                <div class="countdown-timer inline-flex items-center px-2.5 py-1 bg-[#1a1a1a] rounded-md font-mono text-[11px] font-bold text-zinc-300 border border-white/5" data-expire="<%= group.expiredAt %>">Masa aktif ...</div>
                                             <% } else { %>
-                                                <div class="inline-flex items-center px-2.5 py-1 bg-[#1a1a1a] rounded-md font-mono text-[11px] font-bold text-zinc-300 border border-white/5">permanent</div>
+                                                <div class="inline-flex items-center px-2.5 py-1 bg-[#1a1a1a] rounded-md font-mono text-[11px] font-bold text-zinc-300 border border-white/5">Permanent</div>
                                             <% } %>
                                             
                                             <!-- Tooltip or tiny indicator for Order ID -->
@@ -1003,7 +1003,7 @@
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                        timer.innerText = `masa aktif ${days}h ${hours}j ${minutes}m ${seconds}d`;
+                        timer.innerText = `Masa aktif ${days}h ${hours}j ${minutes}m ${seconds}d`;
                     }
                 });
             }
