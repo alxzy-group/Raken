@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <!-- Default to dark mode unless explicitly set to light -->
+    <script>
+        try {
+            if (localStorage.getItem('theme') === 'light') {
+                document.documentElement.classList.add('light-theme');
+            } else {
+                localStorage.setItem('theme', 'dark');
+            }
+        } catch(e) {}
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bot WhatsApp untuk komunitas yang lebih rapi dan aktif.">
+    <meta property="og:title" content="Ravenzena Bot">
+    <meta property="og:description" content="Bot WhatsApp untuk komunitas yang lebih rapi dan aktif.">
+    <meta property="og:image" content="/favicon.png">
+    <title>Ravenzena Bot | Layanan Bot WhatsApp</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" href="/favicon.png">
+
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+
+        /* ─── PREMIUM MAGENTA ACCENT ─── */
+        :root {
+            --accent: #d946ef; /* Fuchsia/Magenta */
+            --accent-glow: rgba(217, 70, 239, 0.3);
+            --primary-glow: rgba(217, 70, 239, 0.15);
+        }
+
+        /* ─── TRUE LIGHT MODE ─── */
+        html.light-theme {
+            --bg: #FFFFFF;
+            --bg-card: #FAFAFA;
+            --bg-card2: #F4F4F5;
+            --bg-glass: rgba(0, 0, 0, 0.04);
+            --border: rgba(0, 0, 0, 0.08);
+            --border-hover: rgba(0, 0, 0, 0.15);
+            --text: #18181B;
+            --text-muted: #52525B;
+            --text-dim: #A1A1AA;
+            --primary: #18181B;
+            --primary-d: #27272A;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+        
+        /* Light mode specific overrides */
+        html.light-theme .grid-lines {
+            background-image:
+                linear-gradient(to right, rgba(0,0,0,.06) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,.06) 1px, transparent 1px);
+        }
+        html.light-theme .hero-title .grad {
+            background: linear-gradient(135deg, #0F172A 0%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        html.light-theme .hero-eyebrow, html.light-theme .h-stat, html.light-theme .feat-card, html.light-theme .bot-card, html.light-theme .form-card, html.light-theme .pkg-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+        }
+        html.light-theme .hero-section::before {
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+        }
+        html.light-theme .btn-glow {
+            background: var(--accent);
+            color: #FFFFFF;
+            box-shadow: 0 4px 14px var(--accent-glow);
+        }
+        html.light-theme .btn-outline-hero {
+            background: rgba(0,0,0,.04);
+            border-color: rgba(0,0,0,.1);
+            color: var(--text);
+        }
+        html.light-theme .form-input {
+            background: var(--bg-card2);
+            border-color: var(--border);
+            color: var(--text);
+        }
+        html.light-theme ::-webkit-scrollbar-track { background: #FFFFFF; }
+        html.light-theme ::-webkit-scrollbar-thumb { background: #D4D4D8; }
+        
+        /* Navbar specific override for light mode */
+        html.light-theme .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.03);
+        }
+
+        /* ─── Grid-lines background ─── */
+        .grid-lines {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            opacity: 0.6;
+            pointer-events: none;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,.05) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        /* ─── Hero ─── */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 120px 20px 80px;
+        }
+
+        /* Gradient orb behind hero */
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 700px; height: 700px;
+            top: -250px; left: 50%;
+            transform: translateX(-50%);
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.8;
+            mix-blend-mode: screen;
+        }
+
+        .hero-eyebrow {
+            position: relative; z-index: 2;
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 6px 18px;
+            font-size: 12.5px; font-weight: 600;
+            color: var(--text);
+            letter-spacing: .08em; text-transform: uppercase;
+            margin-bottom: 28px;
+            backdrop-filter: blur(12px);
+            animation: fsd .6s ease both;
+        }
+
+        .eyebrow-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes dotPulse {
+            0%,100% { opacity:1; transform:scale(1); }
+            50%     { opacity:.5; transform:scale(1.5); }
+        }
+        @keyframes fsd {
+            from { opacity:0; transform:translateY(-20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        .hero-title {
+            position: relative; z-index: 2;
+            font-size: clamp(46px, 8vw, 96px);
+            font-weight: 900;
+            letter-spacing: -.04em;
+            line-height: 1;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fsd .7s .1s ease both;
+        }
+        .hero-title .grad {
+            background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            position: relative; z-index: 2;
+            font-size: 17px; color: var(--text-muted);
+            text-align: center; max-width: 600px;
+            margin-bottom: 30px;
+            animation: fsd .7s .2s ease both;
+            line-height: 1.6;
+        }
+
+        .typing-desc-container {
+            position: relative; z-index: 2;
+            font-size: 15px; font-weight: 600;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 40px;
+            min-height: 24px;
+            animation: fsd .7s .25s ease both;
+        }
+
+        .dynamic-typing-above-btn {
+            position: relative; z-index: 2;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 13px; font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            animation: fsd .7s .3s ease both;
+        }
+
+        .hero-cta {
+            position: relative; z-index: 2;
+            display: flex; gap: 14px; flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 40px;
+            animation: fsd .7s .3s ease both;
+        }
+
+        .hero-contacts {
+            position: relative; z-index: 2;
+            display: flex; gap: 12px; flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 50px;
+            animation: fsd .7s .35s ease both;
+        }
+        .contact-pill {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .25s;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .contact-pill.wa {
+            background: rgba(16,185,129,.1);
+            color: var(--success);
+        }
+        .contact-pill.wa:hover {
+            background: var(--success);
+            color: #fff;
+            border-color: var(--success);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(16,185,129,.3);
+        }
+        .contact-pill.tg {
+            background: rgba(59,130,246,.1);
+            color: #3B82F6;
+        }
+        .contact-pill.tg:hover {
+            background: #3B82F6;
+            color: #fff;
+            border-color: #3B82F6;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(59,130,246,.3);
+        }
+        .contact-pill .tooltip {
+            position: absolute;
+            bottom: -28px;
+            white-space: nowrap;
+            font-size: 11px;
+            color: var(--text-muted);
+            opacity: 0;
+            transition: opacity .2s;
+        }
+        .contact-pill:hover .tooltip { opacity: 1; }
+
+        .hero-stats {
+            position: relative; z-index: 2;
+            display: flex; gap: 16px; flex-wrap: wrap;
+            justify-content: center;
+            animation: fsd .7s .4s ease both;
+        }
+
+        .h-stat {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px 24px;
+            text-align: center;
+            min-width: 100px;
+            backdrop-filter: blur(12px);
+            transition: all .25s;
+        }
+        .h-stat:hover {
+            background: var(--bg-card2);
+            border-color: var(--accent);
+            transform: translateY(-3px);
+        }
+        .h-stat-num {
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: -.03em;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .h-stat-lbl {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-dim);
+        }
+
+        .scroll-ind {
+            position: absolute;
+            bottom: 32px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            color: var(--text-dim);
+            font-size: 11px;
+            letter-spacing: .1em;
+            animation: scrollBounce 2s ease-in-out infinite;
+        }
+        @keyframes scrollBounce {
+            0%,100% { transform: translateX(-50%) translateY(0); }
+            50%     { transform: translateX(-50%) translateY(8px); }
+        }
+
+        /* ─── Feature strip ─── */
+        .feat-strip {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            padding: 0 20px;
+            max-width: 1100px;
+            margin: 0 auto 80px;
+        }
+        .feat-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 22px 20px;
+            display: flex; align-items: flex-start; gap: 16px;
+            transition: all .25s;
+        }
+        .feat-card:hover {
+            background: var(--bg-card2);
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,.3);
+        }
+        .feat-ico {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; flex-shrink: 0;
+        }
+        .feat-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .feat-desc  { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+        /* ─── Section headings ─── */
+        .sec-label {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 11.5px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .12em;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        .sec-heading {
+            font-size: clamp(26px, 4vw, 40px);
+            font-weight: 900;
+            letter-spacing: -.03em;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .sec-sub {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+        }
+
+        /* ─── Bot selection cards ─── */
+        .bot-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+        .bot-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all .3s cubic-bezier(.34,1.56,.64,1);
+            display: flex; flex-direction: column; gap: 14px;
+        }
+        .bot-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(135deg, var(--accent-light) 0%, transparent 60%);
+            opacity: 0; transition: opacity .3s;
+        }
+        .bot-card::after {
+            content: '';
+            position: absolute; top: -60px; right: -60px;
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0; transition: opacity .3s;
+        }
+        .bot-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 60px rgba(0,0,0,.5), 0 0 40px var(--accent-light);
+        }
+        .bot-card:hover::before, .bot-card:hover::after { opacity: 1; }
+        .bot-card.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        .bot-card .shimmer {
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0; transition: opacity .3s;
+        }
+        .bot-card:hover .shimmer, .bot-card.active .shimmer { opacity: 1; }
+        .bot-card-icon {
+            width: 48px; height: 48px;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            position: relative; z-index: 1;
+        }
+        .bot-card-title { font-size: 18px; font-weight: 700; position: relative; z-index: 1; }
+        .bot-card-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.5; position: relative; z-index: 1; }
+
+        /* ─── Package cards ─── */
+        .pkg-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .pkg-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .25s;
+        }
+        .pkg-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            background: var(--bg-card2);
+        }
+        .pkg-card.active {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        /* ─── Order form ─── */
+        .order-section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 100px 20px 80px;
+            position: relative; z-index: 10;
+        }
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+        .form-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        .loading-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,.7);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 16px;
+        }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid rgba(14,165,233,.2);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
+            outline: none;
+            transition: all .2s;
+        }
+        .form-input::placeholder { color: var(--text-dim); }
+        .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(14,165,233,.1); }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .btn-glow {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--primary); color: var(--bg);
+            font-weight: 700; font-size: 15px;
+            padding: 14px 32px;
+            border-radius: 100px;
+            text-decoration: none; border: none; cursor: pointer;
+            position: relative; overflow: hidden;
+            box-shadow: 0 4px 14px rgba(255,255,255,0.1);
+            transition: transform .2s, box-shadow .2s;
+            font-family: var(--font);
+        }
+        .btn-glow:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 20px rgba(255,255,255,0.15);
+        }
+        .btn-outline-hero {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--bg-glass);
+            color: var(--text);
+            font-weight: 600; font-size: 15px;
+            padding: 14px 28px;
+            border-radius: 100px;
+            text-decoration: none;
+            border: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            transition: all .2s;
+            font-family: var(--font);
+            cursor: pointer;
+        }
+        .btn-outline-hero:hover {
+            background: rgba(255,255,255,.09);
+            border-color: rgba(255,255,255,.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #fff;
+            font-weight: 700;
+            border: none; cursor: pointer;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-family: var(--font);
+            font-size: 14px;
+            transition: all .2s;
+            box-shadow: 0 4px 20px rgba(14,165,233,.2);
+        }
+        .btn-accent:hover { opacity: .9; transform: translateY(-1px); }
+        .btn-accent:disabled { opacity: .5; cursor: not-allowed; }
+
+        .toggle-bar {
+            display: flex;
+            padding: 4px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+        .toggle-bar label { flex: 1; cursor: pointer; }
+        .toggle-bar .t-opt {
+            display: block;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px; font-weight: 600;
+            border-radius: 8px;
+            transition: all .2s;
+            color: var(--text-muted);
+        }
+        .toggle-bar .t-opt.on {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 2px 12px var(--accent-glow);
+        }
+
+        /* ─── Checkout ─── */
+        .checkout-section {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 100px 20px 80px;
+            position: relative; z-index: 10;
+        }
+        .qris-wrap {
+            background: #fff;
+            border-radius: 18px;
+            padding: 16px;
+            display: inline-block;
+            box-shadow: 0 8px 30px rgba(14,165,233,.1);
+        }
+        .status-overlay {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,.88);
+            backdrop-filter: blur(4px);
+            border-radius: 18px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 24px; z-index: 10;
+        }
+
+        /* ─── Footer ─── */
+        .site-footer {
+            border-top: 1px solid var(--border);
+            padding: 60px 20px 40px;
+            position: relative; z-index: 10;
+        }
+        .footer-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 40px;
+        }
+        .footer-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+        .footer-links { list-style: none; padding: 0; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color .2s;
+        }
+        .footer-links a:hover { color: var(--accent); }
+        .footer-bottom {
+            max-width: 1100px;
+            margin: 40px auto 0;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; color: var(--text-dim);
+        }
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            margin-right: 6px;
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+            .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+            .navbar-links .nav-link { display: none; }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({ duration: 800, once: true });
+            
+            // Hero description typing
+            new Typed('#typed-desc', {
+                strings: [
+                    'Memberikan kemudahan moderasi grup tanpa campur tangan manual.',
+                    'Dilengkapi fitur keamanan tingkat tinggi untuk mencegah spam.',
+                    'Mengelola komunitasmu selama 24 jam penuh tanpa lelah.',
+                    'Dapatkan laporan aktivitas grup secara lengkap dan real-time.'
+                ],
+                typeSpeed: 40,
+                backSpeed: 20,
+                backDelay: 3000,
+                loop: true,
+                showCursor: true,
+                cursorChar: '|'
+            });
+
+            // Dynamic typing above contacts
+            new Typed('#typed-features', {
+                strings: [
+                    'Menyapa member baru 👋',
+                    'Menghapus link spam 🛡️',
+                    'Mencatat aktivitas grup 📊',
+                    'Bikin games interaktif 🎮'
+                ],
+                typeSpeed: 50,
+                backSpeed: 30,
+                backDelay: 2000,
+                loop: true,
+                showCursor: false
+            });
+
+            // --- Premium Canvas Particle Animation ---
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+            
+            const particles = [];
+            const isLight = () => document.documentElement.classList.contains('light-theme');
+            
+            for(let i = 0; i < 40; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 2 + 0.5,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    alpha: Math.random() * 0.5 + 0.1
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                const lightMode = isLight();
+                
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    if(p.x < 0 || p.x > width) p.vx *= -1;
+                    if(p.y < 0 || p.y > height) p.vy *= -1;
+                    
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    // Use magenta/purple hues, adapt opacity based on theme
+                    ctx.fillStyle = lightMode 
+                        ? `rgba(217, 70, 239, ${p.alpha * 0.8})` 
+                        : `rgba(217, 70, 239, ${p.alpha})`;
+                    ctx.fill();
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            animate();
+        });
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('ravenApp', () => ({
+                view: (null && "PENDING" === 'PENDING') ? 'checkout' : 'home',
+                mobileMenuOpen: false,
+                pricing: {"store":{"paket1":{"nama":"1 Bulan","harga":10000,"hari":30},"paket2":{"nama":"2 Bulan","harga":18000,"hari":60}},"v3":{"paket1":{"nama":"1 Bulan","harga":18000,"hari":30},"paket2":{"nama":"2 Bulan","harga":27000,"hari":60},"paket3":{"nama":"3 Bulan","harga":35000,"hari":90}},"cc":{"paket1":{"nama":"1 Bulan","harga":15000,"hari":30},"paket2":{"nama":"2 Bulan","harga":25000,"hari":60}}},
+                contacts: [{"type":"whatsapp","id":"6285147084529","name":"Raken Store"},{"type":"whatsapp","id":"6285658762303","name":"Venn Store"},{"type":"whatsapp","id":"6283180602352","name":"Zize Store"},{"type":"whatsapp","id":"6281949574876","name":"Nayla Store"}],
+                infoGroups: {"store":"https://chat.whatsapp.com/Ew4N1TYPtuN8Il3ADZ0J9y","v3":"https://chat.whatsapp.com/KZHbXWdMWluCGmvo9SUOzA","cc":"https://chat.whatsapp.com/JSuVPInZuG56IBGxYTs3u7"},
+                selectedBot: 'store',
+                orderType: 'baru',
+                selectedPackage: 'paket2',
+                orderId: null,
+                qrisData: null,
+                harga: 0,
+                status: "PENDING",
+                timeLeft: 300,
+                isLoading: false,
+                formError: '',
+                isDarkMode: false,
+
+                voucherCode: '',
+                voucherValid: false,
+                voucherDiscount: 0,
+                voucherType: 'percent',
+                isValidatingVoucher: false,
+                voucherMessage: '',
+
+                get finalPrice() {
+                    let basePrice = 0;
+                    if (this.pricing && this.pricing[this.selectedBot] && this.pricing[this.selectedBot][this.selectedPackage]) {
+                        basePrice = this.pricing[this.selectedBot][this.selectedPackage].harga;
+                    }
+                    if (this.voucherValid) {
+                        if (this.voucherType === 'percent') {
+                            basePrice = basePrice - (basePrice * (this.voucherDiscount / 100));
+                        } else {
+                            basePrice = basePrice - this.voucherDiscount;
+                        }
+                    }
+                    return basePrice < 0 ? 0 : Math.round(basePrice);
+                },
+
+                initTheme() {
+                    const savedTheme = localStorage.getItem('theme');
+                    if (savedTheme === 'light') {
+                        this.isDarkMode = false;
+                        document.documentElement.classList.add('light-theme');
+                    } else {
+                        this.isDarkMode = true;
+                        localStorage.setItem('theme', 'dark');
+                        document.documentElement.classList.remove('light-theme');
+                    }
+                },
+                toggleTheme() {
+                    this.isDarkMode = !this.isDarkMode;
+                    if (this.isDarkMode) {
+                        document.documentElement.classList.remove('light-theme');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.documentElement.classList.add('light-theme');
+                        localStorage.setItem('theme', 'light');
+                    }
+                },
+
+                init() {
+                    this.initTheme();
+                    if (this.pricing && this.pricing[this.selectedBot]) {
+                        const pkgs = Object.keys(this.pricing[this.selectedBot]);
+                        if (pkgs.length > 0 && !this.pricing[this.selectedBot][this.selectedPackage]) {
+                            this.selectedPackage = pkgs[0];
+                        }
+                    }
+                    if (this.view === 'checkout') {
+                        this.startTimers();
+                    }
+                },
+
+                goToOrder() {
+                    this.view = 'order';
+                    this.mobileMenuOpen = false;
+                    this.$nextTick(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+                },
+                goToHome() {
+                    this.view = 'home';
+                    this.mobileMenuOpen = false;
+                    history.pushState(null, '', '/');
+                    this.$nextTick(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+                },
+
+                resetVoucher() {
+                    this.voucherValid = false;
+                    this.voucherDiscount = 0;
+                    this.voucherMessage = '';
+                },
+
+                selectBot(botId) {
+                    if (this.selectedBot !== botId) this.resetVoucher();
+                    this.selectedBot = botId;
+                    const pkgs = Object.keys(this.pricing[botId] || {});
+                    this.selectedPackage = pkgs.length > 0 ? pkgs[0] : '';
+                },
+
+                async checkVoucher() {
+                    if (!this.voucherCode) return;
+                    this.isValidatingVoucher = true;
+                    this.voucherMessage = '';
+                    this.voucherValid = false;
+                    try {
+                        const res = await fetch('/api/validate-voucher', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code: this.voucherCode, jenis_bot: this.selectedBot })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.voucherValid = true;
+                            this.voucherDiscount = data.discount;
+                            this.voucherType = data.type;
+                            this.voucherMessage = `Voucher berhasil! Diskon ${data.type === 'percent' ? data.discount + '%' : 'Rp ' + data.discount.toLocaleString('id-ID')}`;
+                        } else {
+                            this.voucherMessage = data.error || 'Voucher tidak valid';
+                        }
+                    } catch (e) {
+                        this.voucherMessage = 'Gagal memvalidasi voucher';
+                    }
+                    this.isValidatingVoucher = false;
+                },
+
+                async submitForm(e) {
+                    this.isLoading = true;
+                    this.formError = '';
+                    const formData = new FormData(e.target);
+                    const data = Object.fromEntries(formData.entries());
+                    try {
+                        const res = await fetch('/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(data)
+                        });
+                        const result = await res.json();
+                        if (result.success) {
+                            this.orderId = result.orderId;
+                            this.qrisData = result.qris;
+                            this.harga = result.harga;
+                            this.status = result.status || 'PENDING';
+                            this.selectedBot = result.jenis_bot || this.selectedBot;
+                            this.timeLeft = 300;
+                            history.pushState(null, '', '/?checkout=' + this.orderId);
+                            this.view = 'checkout';
+                            this.startTimers();
+                            setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 100);
+                        } else {
+                            this.formError = result.message || 'Pesanan belum dapat diproses.';
+                        }
+                    } catch (err) {
+                        this.formError = 'Server tidak dapat dijangkau.';
+                    }
+                    this.isLoading = false;
+                },
+
+                startTimers() {
+                    const timer = setInterval(() => {
+                        if (this.timeLeft > 0 && this.status === 'PENDING') {
+                            this.timeLeft--;
+                        } else {
+                            clearInterval(timer);
+                            if (this.timeLeft === 0 && this.status === 'PENDING') this.status = 'EXPIRED';
+                        }
+                    }, 1000);
+                    const poll = setInterval(async () => {
+                        if (['COMPLETED', 'SUCCESS', 'EXPIRED', 'CANCELLED', 'ERROR'].includes(this.status)) {
+                            clearInterval(poll); return;
+                        }
+                        try {
+                            const res = await fetch('/status/' + this.orderId);
+                            const data = await res.json();
+                            this.status = data.status || this.status;
+                        } catch (e) { }
+                    }, 5000);
+                },
+
+                async cancelOrder() {
+                    if (!confirm('Yakin ingin membatalkan pesanan ini?')) return;
+                    this.isLoading = true;
+                    try {
+                        const res = await fetch('/cancel/' + this.orderId, { method: 'POST' });
+                        const result = await res.json();
+                        if (result.success) this.status = 'CANCELLED';
+                    } catch (err) { alert('Gagal membatalkan pesanan.'); }
+                    this.isLoading = false;
+                },
+
+                formatTime() {
+                    let m = Math.floor(this.timeLeft / 60);
+                    let s = this.timeLeft % 60;
+                    return `${m}:${s < 10 ? '0' : ''}${s}`;
+                }
+            }));
+        });
+    </script>
+</head>
+<body x-data="ravenApp">
+
+    <!-- Premium Canvas Animation -->
+    <canvas id="bg-canvas" style="position:fixed; inset:0; z-index:0; pointer-events:none;"></canvas>
+
+    <!-- Grid-lines background -->
+    <div class="grid-lines"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <a href="#" @click.prevent="goToHome()" class="navbar-brand">
+            <img src="/favicon.png" alt="Logo" style="width:32px;height:32px;border-radius:8px;object-fit:cover;">
+            <span>Ravenzena <span style="color:var(--accent)">Bot</span></span>
+        </a>
+        <div class="navbar-links">
+            <a href="#" @click.prevent="goToHome()" class="nav-link" :class="view === 'home' ? 'active' : ''">Fitur</a>
+            <a href="#" @click.prevent="goToOrder()" class="nav-link" :class="view === 'order' ? 'active' : ''">Harga</a>
+            
+            <!-- Theme Toggle -->
+            <button @click="toggleTheme()" style="width:36px;height:36px;border-radius:12px;background:var(--bg-glass);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-left:4px;box-shadow:0 4px 12px rgba(0,0,0,.1);">
+                <i x-show="isDarkMode" class="fas fa-moon" style="font-size:14px;color:var(--accent);"></i>
+                <i x-show="!isDarkMode" class="fas fa-sun" style="font-size:14px;color:#F59E0B;"></i>
+            </button>
+
+            <button x-show="view === 'home'" @click="goToOrder()" class="btn-glow" style="margin-left:12px;padding:10px 24px;font-size:13.5px;box-shadow:0 0 20px rgba(14,165,233,.2);background:var(--accent);color:#fff;">Pesan Sekarang</button>
+            <button x-show="view !== 'home'" @click="goToHome()" class="btn-outline-hero" style="margin-left:12px;padding:10px 24px;font-size:13.5px;">← Beranda</button>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- HOME VIEW                                          -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div x-show="view === 'home'" x-transition x-cloak>
+        <section class="hero-section">
+            <div class="hero-eyebrow">
+                <div class="eyebrow-dot"></div>
+                Pembaruan v4.0 sudah rilis 🎉
+            </div>
+
+            <!-- Bot Image -->
+            <div data-aos="zoom-in" style="margin-bottom: 16px; border-radius: 24px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 20px 60px var(--accent-light);">
+                <img src="https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg" alt="Ravenzena Bot" style="width:240px;height:auto;display:block;">
+            </div>
+
+            <!-- Dynamic typing below thumbnail -->
+            <div class="dynamic-typing-above-btn" style="margin-bottom: 28px; font-size: 14px;">
+                <span style="opacity: 0.6;">Bot ini otomatis: </span><span id="typed-features" style="color: var(--accent);"></span>
+            </div>
+
+            <h1 class="hero-title">
+                Otomatisasi Grup<br>
+                <span class="grad">Tanpa Ribet.</span>
+            </h1>
+
+            <p class="hero-sub">
+                Tingkatkan interaksi dan kelola grup komunitasmu dengan bot WhatsApp pintar yang dirancang khusus untuk mempermudah hidupmu. 
+                Sistem kami berjalan 24/7 di server cloud berkinerja tinggi, menjamin setiap perintah dieksekusi tanpa delay panjang. 
+                Sangat cocok untuk grup bisnis, komunitas game, jualan online, atau sekadar ruang diskusi seru-seruan.
+            </p>
+
+            <!-- Typing Animation for Descriptions -->
+            <div class="typing-desc-container">
+                <i class="fas fa-bolt" style="margin-right: 6px;"></i> <span id="typed-desc"></span>
+            </div>
+
+
+
+            <!-- WhatsApp & Telegram contacts -->
+            <div class="hero-contacts">
+                <template x-for="(contact, index) in contacts" :key="index">
+                    <a :href="contact.type === 'whatsapp' ? 'https://wa.me/' + contact.id : 'https://t.me/' + contact.id"
+                       target="_blank"
+                       class="contact-pill" :class="contact.type === 'whatsapp' ? 'wa' : 'tg'">
+                        <svg x-show="contact.type === 'whatsapp'" style="width:22px;height:22px" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path></svg>
+                        <svg x-show="contact.type === 'telegram'" style="width:22px;height:22px" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.223-.548.223l.188-2.85 5.18-4.686c.223-.195-.054-.31-.353-.111l-6.4 4.024-2.76-.86c-.6-.188-.614-.6.126-.89l10.814-4.17c.506-.182.947.114.753.86z"></path></svg>
+                        <span class="tooltip" x-text="contact.name"></span>
+                    </a>
+                </template>
+            </div>
+
+            <div class="hero-cta">
+                <button @click="goToOrder()" class="btn-glow">
+                    Mulai Berlangganan <i class="fas fa-arrow-right"></i>
+                </button>
+                <a href="#features" class="btn-outline-hero">
+                    <i class="fas fa-bolt"></i> Lihat Fitur
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="h-stat"><div class="h-stat-num">24/7</div><div class="h-stat-lbl">Aktif</div></div>
+                <div class="h-stat"><div class="h-stat-num">QRIS</div><div class="h-stat-lbl">Otomatis</div></div>
+                <div class="h-stat"><div class="h-stat-num">3</div><div class="h-stat-lbl">Tipe Bot</div></div>
+                <div class="h-stat"><div class="h-stat-num">Easy</div><div class="h-stat-lbl">Setup</div></div>
+            </div>
+
+            <div class="scroll-ind">
+                <span>SCROLL</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </section>
+
+        <!-- Feature strip -->
+        <section id="features" class="feat-strip" data-aos="fade-up">
+            <div class="feat-card">
+                <div class="feat-ico" style="background:rgba(16,185,129,.1); color:var(--success);"><i class="fab fa-whatsapp"></i></div>
+                <div><div class="feat-title">WhatsApp Bot</div><div class="feat-desc">Bot resmi yang berjalan 24/7 di dalam grup WhatsApp kamu.</div></div>
+            </div>
+            <div class="feat-card">
+                <div class="feat-ico" style="background:rgba(14,165,233,.1); color:var(--accent);"><i class="fas fa-robot"></i></div>
+                <div><div class="feat-title">Respons Cepat</div><div class="feat-desc">Balasan instan untuk setiap perintah. Performa tinggi, minim delay.</div></div>
+            </div>
+            <div class="feat-card">
+                <div class="feat-ico" style="background:rgba(139,92,246,.1); color:#8B5CF6;"><i class="fas fa-shield-alt"></i></div>
+                <div><div class="feat-title">Anti-Spam</div><div class="feat-desc">Proteksi grup dari link spam, pesan berulang, dan bot liar secara otomatis.</div></div>
+            </div>
+            <div class="feat-card">
+                <div class="feat-ico" style="background:rgba(236,72,153,.1); color:var(--pink);"><i class="fas fa-chart-bar"></i></div>
+                <div><div class="feat-title">Statistik Grup</div><div class="feat-desc">Pantau aktivitas anggota, pesan masuk, dan keaktifan grup harian.</div></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- ORDER VIEW                                         -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div x-show="view === 'order'" x-transition x-cloak>
+        <div class="order-section">
+            <div style="text-align:center; margin-bottom:50px;" data-aos="fade-up">
+                <div class="sec-label"><i class="fas fa-cube"></i> Pilih Layanan</div>
+                <h2 class="sec-heading">Paket bot untuk setiap kebutuhan.</h2>
+                <p class="sec-sub">BOT CC & GUILD udh paket VVIP</p>
+            </div>
+
+            <!-- Bot selection -->
+            <div class="bot-grid" data-aos="fade-up" data-aos-delay="100">
+                <template x-for="(bot, index) in [
+                    {id: 'store', name: 'Bot Store', desc: 'Cocok untuk jualan. Ada fitur simpan data, katalog produk, dan balasan otomatis.', icon: 'fas fa-store', color: 'rgba(14,165,233,.1)', colorTxt: 'var(--accent)'},
+                    {id: 'v3', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi sistem level dan absensi.', icon: 'fas fa-users', color: 'rgba(139,92,246,.1)', colorTxt: '#8B5CF6'},
+                    {id: 'cc', name: 'Bot CC', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'fas fa-bolt', color: 'rgba(245,158,11,.1)', colorTxt: 'var(--warning)'}
+                ]" :key="index">
+                    <div class="bot-card" :class="selectedBot === bot.id ? 'active' : ''" @click="selectBot(bot.id)">
+                        <div class="shimmer"></div>
+                        <div class="bot-card-icon" :style="'background:' + bot.color + ';color:' + bot.colorTxt"><i :class="bot.icon"></i></div>
+                        <div class="bot-card-title" x-text="bot.name"></div>
+                        <div class="bot-card-desc" x-text="bot.desc"></div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Order form -->
+            <div class="form-card" data-aos="fade-up" data-aos-delay="200">
+                <!-- Loading overlay -->
+                <div x-show="isLoading" class="loading-overlay" x-transition>
+                    <div class="spinner"></div>
+                    <p style="font-size:14px;font-weight:600;">Memproses Pesanan...</p>
+                </div>
+
+                <form @submit.prevent="submitForm" style="padding:32px;" :style="isLoading ? 'opacity:.5;pointer-events:none' : ''">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+                        <!-- Left column -->
+                        <div>
+                            <h4 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+                                <span style="width:28px;height:28px;border-radius:6px;background:var(--bg-glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;">1</span>
+                                Informasi Grup
+                            </h4>
+                            <div style="display:flex;flex-direction:column;gap:16px;">
+                                <div>
+                                    <label class="form-label">Email Pengelola</label>
+                                    <input type="email" name="email" required placeholder="email@contoh.com" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Link Grup WhatsApp</label>
+                                    <input type="url" name="link_group" required placeholder="https://chat.whatsapp.com/..." class="form-input">
+                                    <p style="margin-top:8px;font-size:11px;font-weight:700;color:var(--danger);text-transform:uppercase;animation:dotPulse 1.5s infinite;">
+                                        ⚠ Matikan persetujuan admin grup agar bot tidak error saat join
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right column -->
+                        <div>
+                            <h4 style="font-size:15px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+                                <span style="width:28px;height:28px;border-radius:6px;background:var(--bg-glass);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;">2</span>
+                                Detail Berlangganan
+                            </h4>
+
+                            <!-- Toggle baru/perpanjang -->
+                            <div class="toggle-bar" style="margin-bottom:20px;">
+                                <label>
+                                    <input type="radio" name="tipe_order" value="baru" x-model="orderType" style="display:none">
+                                    <div class="t-opt" :class="orderType === 'baru' ? 'on' : ''">Baru</div>
+                                </label>
+                                <label>
+                                    <input type="radio" name="tipe_order" value="perpanjang" x-model="orderType" style="display:none">
+                                    <div class="t-opt" :class="orderType === 'perpanjang' ? 'on' : ''">Perpanjang</div>
+                                </label>
+                            </div>
+
+                            <!-- Warning perpanjang -->
+                            <div x-show="orderType === 'perpanjang'" x-transition style="margin-bottom:16px;padding:12px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:12px;display:flex;align-items:center;gap:10px;">
+                                <i class="fas fa-exclamation-circle" style="color:var(--warning);font-size:18px;"></i>
+                                <p style="font-size:11px;font-weight:700;color:var(--warning);text-transform:uppercase;">Pastikan bot yang mau diperpanjang ada di dalam grup</p>
+                            </div>
+
+                            <!-- Package grid -->
+                            <div class="pkg-grid">
+                                <template x-for="(pkg, key) in (pricing[selectedBot] || {})" :key="key">
+                                    <div class="pkg-card" :class="selectedPackage === key ? 'active' : ''" @click="selectedPackage = key">
+                                        <div style="font-size:12px;color:var(--text-muted);font-weight:500;margin-bottom:4px;" x-text="pkg.nama"></div>
+                                        <div style="font-size:20px;font-weight:800;" x-text="'Rp ' + pkg.harga.toLocaleString('id-ID')"></div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <input type="hidden" name="jenis_bot" x-model="selectedBot">
+                            <input type="hidden" name="paket" x-model="selectedPackage">
+
+                            <!-- Voucher -->
+                            <div style="margin-bottom:20px;">
+                                <label class="form-label">Kode Voucher (Opsional)</label>
+                                <div style="display:flex;gap:10px;">
+                                    <input type="text" name="voucher_code" x-model="voucherCode" placeholder="Masukkan kode promo" class="form-input" style="text-transform:uppercase;flex:1;" @input="resetVoucher()">
+                                    <button type="button" @click="checkVoucher()" :disabled="isValidatingVoucher || !voucherCode" class="btn-accent" style="white-space:nowrap;">
+                                        <span x-show="!isValidatingVoucher">Terapkan</span>
+                                        <span x-show="isValidatingVoucher"><i class="fas fa-circle-notch fa-spin"></i></span>
+                                    </button>
+                                </div>
+                                <p x-show="voucherMessage" style="margin-top:8px;font-size:12px;font-weight:600;" :style="voucherValid ? 'color:var(--success)' : 'color:var(--danger)'" x-text="voucherMessage"></p>
+                            </div>
+
+                            <!-- Total -->
+                            <div style="padding:18px;background:var(--bg-glass);border:1px solid var(--border);border-radius:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                                <span style="font-size:14px;color:var(--text-muted);">Total Pembayaran</span>
+                                <div style="text-align:right;">
+                                    <div x-show="voucherValid" style="font-size:12px;color:var(--text-dim);text-decoration:line-through;margin-bottom:2px;" x-text="'Rp ' + (pricing[selectedBot] && pricing[selectedBot][selectedPackage] ? pricing[selectedBot][selectedPackage].harga.toLocaleString('id-ID') : 0)"></div>
+                                    <span style="font-size:24px;font-weight:900;" x-text="'Rp ' + finalPrice.toLocaleString('id-ID')"></span>
+                                </div>
+                            </div>
+
+                            <!-- Error -->
+                            <p x-show="formError" style="padding:12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;font-size:13px;color:var(--danger);margin-bottom:16px;" x-text="formError"></p>
+
+                            <!-- Submit -->
+                            <button type="submit" :disabled="isLoading" class="btn-glow" style="width:100%;justify-content:center;border-radius:14px;padding:16px;font-size:16px;">
+                                <span x-show="!isLoading">Lanjutkan ke Pembayaran <i class="fas fa-arrow-right" style="margin-left:4px;"></i></span>
+                                <span x-show="isLoading"><i class="fas fa-circle-notch fa-spin"></i> Memproses...</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- CHECKOUT VIEW                                      -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div x-show="view === 'checkout'" x-transition x-cloak>
+        <div class="checkout-section">
+            <div class="form-card" style="text-align:center;padding:40px 28px;">
+
+                <!-- Progress bar -->
+                <div style="position:absolute;top:0;left:0;width:100%;height:4px;background:rgba(255,255,255,.06);border-radius:24px 24px 0 0;overflow:hidden;">
+                    <div style="height:100%;background:var(--accent);transition:width 1s linear;" :style="'width:' + ((timeLeft/300)*100) + '%'"></div>
+                </div>
+
+                <h2 style="font-size:24px;font-weight:800;margin-bottom:8px;">Selesaikan Pembayaran</h2>
+                <div style="color:var(--text-muted);font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;">
+                    <span style="width:8px;height:8px;background:var(--warning);border-radius:50%;box-shadow:0 0 12px var(--warning);animation:dotPulse 1.5s infinite;"></span>
+                    Menunggu pembayaran masuk...
+                </div>
+
+                <!-- Admin approval warning -->
+                <div x-show="status === 'PENDING'" style="margin-bottom:24px;padding:14px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:12px;">
+                    <p style="font-size:11px;font-weight:800;color:var(--danger);text-transform:uppercase;">⚠️ PENTING: Matikan persetujuan admin grup agar bot tidak error saat join ⚠️</p>
+                </div>
+
+                <!-- QRIS -->
+                <div style="position:relative;display:inline-block;margin-bottom:24px;">
+                    <div class="qris-wrap">
+                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrisData)" alt="QRIS" style="width:240px;height:240px;border-radius:8px;">
+                    </div>
+
+                    <!-- Status overlays -->
+                    <div x-show="status !== 'PENDING'" class="status-overlay">
+                        <template x-if="status === 'COMPLETED' || status === 'SUCCESS'">
+                            <div style="text-align:center;">
+                                <div style="width:56px;height:56px;border-radius:50%;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;"><i class="fas fa-check" style="font-size:24px;color:var(--success);"></i></div>
+                                <div style="font-size:20px;font-weight:700;color:var(--success);margin-bottom:8px;">Pembayaran Berhasil!</div>
+                                <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Bot sedang bergabung ke grup kamu.</p>
+                                <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="btn-accent" style="display:block;text-decoration:none;text-align:center;margin-bottom:8px;">Gabung Grup Info Bot</a>
+                                <button @click="goToHome()" class="btn-outline-hero" style="width:100%;justify-content:center;border-radius:10px;font-size:13px;padding:10px;">Kembali ke Beranda</button>
+                            </div>
+                        </template>
+                        <template x-if="status === 'PAID'">
+                            <div style="text-align:center;">
+                                <div style="width:56px;height:56px;border-radius:50%;background:rgba(14,165,233,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:dotPulse 1.5s infinite;"><i class="fas fa-check-double" style="font-size:22px;color:var(--accent);"></i></div>
+                                <div style="font-size:18px;font-weight:700;color:var(--accent);margin-bottom:8px;">Dana Diterima</div>
+                                <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Pembayaranmu sudah masuk. Sistem sedang memproses...</p>
+                                <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="btn-accent" style="display:block;text-decoration:none;text-align:center;">Gabung Grup Info Bot</a>
+                            </div>
+                        </template>
+                        <template x-if="status === 'WAITING'">
+                            <div style="text-align:center;">
+                                <div style="width:56px;height:56px;border-radius:50%;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;"><i class="fas fa-sync fa-spin" style="font-size:22px;color:var(--warning);"></i></div>
+                                <div style="font-size:18px;font-weight:700;color:var(--warning);margin-bottom:8px;">Sedang Proses</div>
+                                <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Menunggu bot masuk ke grup kamu...</p>
+                                <a :href="infoGroups[selectedBot] || '#'" target="_blank" class="btn-accent" style="display:block;text-decoration:none;text-align:center;">Gabung Grup Info Bot</a>
+                            </div>
+                        </template>
+                        <template x-if="status === 'ERROR'">
+                            <div style="text-align:center;">
+                                <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;"><i class="fas fa-times" style="font-size:24px;color:var(--danger);"></i></div>
+                                <div style="font-size:18px;font-weight:700;color:var(--danger);margin-bottom:8px;">Gagal Join Grup</div>
+                                <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Ada kendala saat bot mencoba masuk. Hubungi admin.</p>
+                                <button @click="goToHome()" class="btn-glow" style="border-radius:10px;font-size:13px;padding:10px 20px;">Kembali ke Beranda</button>
+                            </div>
+                        </template>
+                        <template x-if="status === 'EXPIRED' || status === 'CANCELLED'">
+                            <div style="text-align:center;">
+                                <div style="font-size:18px;font-weight:700;color:var(--danger);margin-bottom:8px;" x-text="status === 'EXPIRED' ? 'Kedaluwarsa' : 'Dibatalkan'"></div>
+                                <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;">Waktu pembayaran habis atau pesanan dibatalkan.</p>
+                                <button @click="goToOrder()" class="btn-outline-hero" style="border-radius:10px;font-size:13px;padding:10px 20px;">Buat Pesanan Baru</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Order details -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left;margin-bottom:24px;">
+                    <div style="padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;">
+                        <span style="display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px;">ID Pesanan</span>
+                        <span style="font-family:var(--mono);font-size:13px;" x-text="orderId"></span>
+                    </div>
+                    <div style="padding:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;">
+                        <span style="display:block;font-size:11px;color:var(--text-dim);margin-bottom:4px;">Batas Waktu</span>
+                        <span style="font-family:var(--mono);font-size:13px;color:var(--warning);" x-text="formatTime()"></span>
+                    </div>
+                    <div style="grid-column:1/-1;padding:18px;background:rgba(14,165,233,.04);border:1px solid rgba(14,165,233,.15);border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
+                        <span style="font-size:14px;color:var(--text-muted);">Total Tagihan</span>
+                        <span style="font-size:22px;font-weight:800;" x-text="'Rp ' + harga.toLocaleString('id-ID')"></span>
+                    </div>
+                </div>
+
+                <button @click="cancelOrder" style="background:none;border:none;color:var(--text-dim);text-decoration:underline;text-underline-offset:4px;font-size:13px;cursor:pointer;transition:color .2s;font-family:var(--font);" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-dim)'">Batalkan Transaksi</button>
+
+                <!-- Payment provider -->
+                <div style="margin-top:28px;padding-top:20px;border-top:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;align-items:center;gap:8px;">
+                    <span style="font-size:11px;color:var(--text-dim);">Pembayaran didukung oleh:</span>
+                    <div style="display:flex;align-items:center;gap:10px;opacity:.5;filter:grayscale(1);transition:all .3s;" onmouseover="this.style.opacity='1';this.style.filter='grayscale(0)'" onmouseout="this.style.opacity='.5';this.style.filter='grayscale(1)'">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" style="height:20px;">
+                        <span style="font-size:13px;font-weight:700;">MustikaPay</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- FOOTER                                             -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+                    <img src="/favicon.png" alt="Logo" style="width:28px;height:28px;border-radius:6px;object-fit:cover;">
+                    <span style="font-weight:800;font-size:18px;">Ravenzena Bot</span>
+                </div>
+                <p style="color:var(--text-muted);font-size:14px;max-width:360px;line-height:1.7;">
+                    Solusi bot WhatsApp cerdas untuk mengelola dan meramaikan grup komunitasmu. Praktis, cepat, dan terpercaya.
+                </p>
+            </div>
+            <div>
+                <div class="footer-title">Layanan</div>
+                <ul class="footer-links">
+                    <li><a href="#features">Fitur Bot</a></li>
+                    <li><a href="#" @click.prevent="goToOrder()">Harga & Paket</a></li>
+                    <li><span style="color:var(--text-dim);font-size:13px;">Status: <span style="color:var(--success)">Normal</span></span></li>
+                </ul>
+            </div>
+            <div>
+                <div class="footer-title">Bantuan</div>
+                <ul class="footer-links">
+                    <li><a href="#" @click.prevent="goToOrder()">Hubungi Admin</a></li>
+                    <li><span style="color:var(--text-dim);font-size:13px;">Syarat & Ketentuan</span></li>
+                    <li><span style="color:var(--text-dim);font-size:13px;">Kebijakan Privasi</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; 2026 Ravenzena Bot. Hak Cipta Dilindungi.</span>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <span class="status-dot"></span>
+                <span>Semua Sistem Normal</span>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

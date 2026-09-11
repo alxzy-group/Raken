@@ -1,0 +1,246 @@
+const fs = require('fs');
+const path = require('path');
+
+const filePath = path.join(__dirname, 'views', 'admin_dashboard.ejs');
+let content = fs.readFileSync(filePath, 'utf8');
+
+// 1. Replace the entire head section with the new modern tech style
+const newHead = `<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Kelola pesanan, grup aktif, voucher, dan identitas website.">
+    <title>Admin Dashboard | Ravenzena Bot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    colors: {
+                        base: '#09090b',
+                        surface: 'rgba(24, 24, 27, 0.45)',
+                        border: 'rgba(255, 255, 255, 0.08)',
+                        accent: '#0ea5e9',
+                        accentHover: '#0284c7',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #09090b; color: #f4f4f5; font-family: 'Inter', sans-serif; min-height: 100dvh; }
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        .order-card {
+            background: rgba(24, 24, 27, 0.45);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .order-card:hover {
+            border-color: #0ea5e9;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 40px -10px rgba(14, 165, 233, 0.3);
+        }
+        .admin-surface {
+            background: rgba(24, 24, 27, 0.45) !important;
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+        .admin-field {
+            background: rgba(9, 9, 11, 0.5) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #f4f4f5 !important;
+        }
+        .admin-field:focus {
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+        }
+        input, select, textarea {
+            background-color: rgba(9, 9, 11, 0.5) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #f4f4f5 !important;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #0ea5e9 !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+        }
+        .admin-hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 2rem;
+            align-items: end;
+            padding: 2.5rem;
+            border-radius: 1.75rem;
+            background: linear-gradient(135deg, rgba(24, 24, 27, 0.8), rgba(9, 9, 11, 0.9));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #f4f4f5;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+        }
+        .admin-hero::after {
+            content: '';
+            position: absolute;
+            width: 25rem;
+            height: 25rem;
+            right: -10rem;
+            top: -10rem;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .admin-hero > * {
+            position: relative;
+            z-index: 1;
+        }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(8rem, 1fr));
+            gap: 1rem;
+        }
+        .metric {
+            padding: 1.25rem;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+        }
+        .metric strong {
+            display: block;
+            font-size: 1.85rem;
+            font-variant-numeric: tabular-nums;
+            color: #0ea5e9;
+        }
+        .metric span {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .toolbar-shell {
+            position: sticky;
+            top: 4.75rem;
+            z-index: 30;
+            background: rgba(9, 9, 11, 0.7) !important;
+            backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        .toast {
+            position: fixed;
+            right: 1.25rem;
+            bottom: 1.25rem;
+            z-index: 70;
+            width: min(24rem, calc(100vw - 2.5rem));
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 55px rgba(0, 0, 0, .5);
+        }
+        .empty-icon {
+            width: 4rem;
+            height: 4rem;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 1.5rem;
+            border-radius: 1.25rem;
+            background: rgba(14, 165, 233, 0.1);
+            color: #0ea5e9;
+            border: 1px solid rgba(14, 165, 233, 0.2);
+        }
+        nav {
+            background-color: rgba(9, 9, 11, 0.8) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .bg-base { background-color: rgba(9, 9, 11, 0.5) !important; }
+        .bg-surface { background-color: rgba(24, 24, 27, 0.45) !important; border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(16px); }
+        .border-border { border-color: rgba(255, 255, 255, 0.08) !important; }
+        .text-accent { color: #0ea5e9 !important; }
+        .bg-accent { background-color: #0ea5e9 !important; }
+        .hover\\:bg-accent:hover { background-color: #0284c7 !important; }
+
+        .tab-btn.bg-accent {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+            box-shadow: 0 4px 14px 0 rgba(14, 165, 233, 0.39);
+        }
+        .mobile-tab-btn.bg-accent\\/10 {
+            background-color: rgba(14, 165, 233, 0.1) !important;
+            color: #0ea5e9 !important;
+        }
+    </style>
+</head>`;
+
+const headRegex = /<!DOCTYPE html>[\s\S]*?<\/head>/;
+content = content.replace(headRegex, newHead);
+
+// 2. Replace the body and background grid
+const bodyRegex = /<body class="antialiased min-h-screen">[\s\S]*?<div class="fixed inset-0 grid-lines z-0 opacity-20"><\/div>/;
+content = content.replace(bodyRegex, `<body class="antialiased min-h-screen relative overflow-hidden text-zinc-300">
+    <!-- tsParticles Container -->
+    <div id="tsparticles" class="fixed inset-0 z-0 pointer-events-none"></div>
+`);
+
+// 3. Update Nav
+content = content.replace(/border-b border-\[\#d9ddd5\] bg-\[\#f3f1ea\]\/90 backdrop-blur-md/, 'border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-xl');
+content = content.replace(/text-gray-900/, 'text-white');
+content = content.replace(/text-\[\#b85c38\]/, 'text-sky-500');
+// Remove theme toggle logic inside nav as we default to dark
+content = content.replace(/<!-- Theme Toggle Button -->[\s\S]*?<!-- Hamburger Button -->/, '<!-- Hamburger Button -->');
+
+// 4. Update texts globally
+content = content.replace(/text-gray-900/g, 'text-zinc-100');
+content = content.replace(/text-gray-600/g, 'text-zinc-400');
+content = content.replace(/text-gray-500/g, 'text-zinc-400');
+content = content.replace(/text-gray-400/g, 'text-zinc-400');
+content = content.replace(/text-gray-300/g, 'text-zinc-300');
+content = content.replace(/text-gray-200/g, 'text-zinc-300');
+content = content.replace(/text-white/g, 'text-white');
+
+// 5. Update primary buttons and accents
+content = content.replace(/bg-accent text-white/g, 'bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/20');
+content = content.replace(/text-accent/g, 'text-sky-500');
+content = content.replace(/bg-accent\/10/g, 'bg-sky-500/10');
+content = content.replace(/border-accent\/20/g, 'border-sky-500/20');
+content = content.replace(/border-accent/g, 'border-sky-500');
+content = content.replace(/hover:text-accent/g, 'hover:text-sky-400');
+content = content.replace(/bg-\[\#b85c38\]/g, 'bg-sky-500');
+content = content.replace(/hover:bg-\[\#b85c38\]/g, 'hover:bg-sky-600');
+
+// 6. Fix scripts to add tsParticles
+const scriptStartRegex = /<script>/;
+content = content.replace(scriptStartRegex, `<script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.0.6/tsparticles.slim.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof tsParticles !== 'undefined') {
+                tsParticles.load("tsparticles", {
+                    background: { color: { value: "transparent" } },
+                    fpsLimit: 60,
+                    particles: {
+                        color: { value: "#0ea5e9" },
+                        links: { color: "#0ea5e9", distance: 150, enable: true, opacity: 0.2, width: 1 },
+                        move: { enable: true, speed: 0.8, direction: "none", outModes: { default: "bounce" } },
+                        number: { density: { enable: true, area: 800 }, value: 40 },
+                        opacity: { value: 0.3 },
+                        size: { value: { min: 1, max: 2 } }
+                    },
+                    detectRetina: true
+                });
+            }
+        });`);
+
+fs.writeFileSync(filePath, content, 'utf8');
+console.log('Successfully updated admin_dashboard.ejs');
