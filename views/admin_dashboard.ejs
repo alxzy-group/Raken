@@ -274,51 +274,49 @@
                         <i class="fas fa-users text-green-400"></i>
                         <h3 class="text-lg font-semibold text-white">Daftar Grup Aktif</h3>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm text-zinc-300">
-                            <thead class="bg-white/5 text-zinc-400 font-medium">
-                                <tr>
-                                    <th class="px-6 py-4 whitespace-nowrap">Grup</th>
-                                    <th class="px-6 py-4 whitespace-nowrap">Order ID</th>
-                                    <th class="px-6 py-4 whitespace-nowrap">Masa Aktif</th>
-                                    <th class="px-6 py-4 whitespace-nowrap">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/5">
-                                <% if(activeGroups.length === 0) { %>
-                                    <tr><td colspan="4" class="px-6 py-12 text-center text-zinc-500">Belum ada grup aktif.</td></tr>
-                                <% } else { %>
-                                    <% activeGroups.forEach(group => { %>
-                                    <tr class="hover:bg-white/5 transition-colors">
-                                        <td class="px-6 py-4 flex items-center gap-3 min-w-[250px]">
-                                            <% if(group.photo) { %>
-                                                <img src="<%= group.photo %>" alt="Grup Photo" class="w-10 h-10 rounded-full object-cover border border-white/10 shrink-0">
-                                            <% } else { %>
-                                                <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10 shrink-0"><i class="fas fa-users text-zinc-500"></i></div>
-                                            <% } %>
-                                            <div class="min-w-0">
-                                                <div class="text-sm font-semibold text-white truncate max-w-[200px]" title="<%= group.name || 'Grup Tidak Dikenal' %>"><%= group.name || 'Grup Tidak Dikenal' %></div>
-                                                <div class="text-[10px] text-zinc-500 font-mono truncate max-w-[200px]" title="<%= group.jid || 'N/A' %>"><%= group.jid || 'N/A' %></div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2.5 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-md font-mono text-xs"><%= group.orderId %></span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="p-6">
+                        <% if(activeGroups.length === 0) { %>
+                            <div class="py-12 text-center text-zinc-500 bg-[#121212] border border-white/5 rounded-2xl">Belum ada grup aktif.</div>
+                        <% } else { %>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <% activeGroups.forEach(group => { %>
+                                <div class="bg-[#121212] border border-white/5 rounded-2xl p-4 flex items-center gap-4 hover:border-white/10 transition-colors">
+                                    <!-- Image -->
+                                    <div class="relative shrink-0">
+                                        <% if(group.photo) { %>
+                                            <img src="<%= group.photo %>" alt="Photo" class="w-14 h-14 rounded-full object-cover border border-red-500/50 p-0.5">
+                                        <% } else { %>
+                                            <div class="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center border border-red-500/50 p-0.5"><i class="fas fa-users text-zinc-500"></i></div>
+                                        <% } %>
+                                    </div>
+                                    
+                                    <!-- Info -->
+                                    <div class="flex-1 min-w-0 flex flex-col justify-center">
+                                        <!-- Name -->
+                                        <h4 class="text-base font-extrabold text-white truncate uppercase tracking-wide"><%= group.name || 'GRUP TIDAK DIKENAL' %></h4>
+                                        
+                                        <!-- Member Count -->
+                                        <div class="text-[13px] text-zinc-400 mt-0.5 flex items-center gap-1.5 font-medium">
+                                            <i class="fa-solid fa-user-group text-[11px]"></i>
+                                            <span><%= group.memberCount || 0 %> member</span>
+                                        </div>
+                                        
+                                        <!-- Timer / Order ID -->
+                                        <div class="mt-2.5 flex items-center gap-2">
                                             <% if(group.expiredAt) { %>
-                                                <div class="countdown-timer inline-block px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md font-mono text-xs font-bold" data-expire="<%= group.expiredAt %>">Menghitung...</div>
+                                                <div class="countdown-timer inline-flex items-center px-2.5 py-1 bg-[#1a1a1a] rounded-md font-mono text-[11px] font-bold text-zinc-300 border border-white/5" data-expire="<%= group.expiredAt %>">masa aktif ...</div>
                                             <% } else { %>
-                                                <span class="inline-block px-2.5 py-1 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-md font-mono text-xs font-bold">Unlimited</span>
+                                                <div class="inline-flex items-center px-2.5 py-1 bg-[#1a1a1a] rounded-md font-mono text-[11px] font-bold text-zinc-300 border border-white/5">permanent</div>
                                             <% } %>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="px-2.5 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[10px] font-bold tracking-wider">AKTIF</span>
-                                        </td>
-                                    </tr>
-                                    <% }) %>
-                                <% } %>
-                            </tbody>
-                        </table>
+                                            
+                                            <!-- Tooltip or tiny indicator for Order ID -->
+                                            <span class="text-[9px] font-mono text-purple-400/50 ml-auto" title="Order ID"><%= group.orderId %></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }) %>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
@@ -1005,7 +1003,7 @@
                         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                        timer.innerText = `${days} Hari ${hours} Jam ${minutes} Menit ${seconds} Detik`;
+                        timer.innerText = `masa aktif ${days}h ${hours}j ${minutes}m ${seconds}d`;
                     }
                 });
             }
