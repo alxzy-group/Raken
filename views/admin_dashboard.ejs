@@ -278,10 +278,10 @@
                         <table class="w-full text-left text-sm text-zinc-300">
                             <thead class="bg-white/5 text-zinc-400 font-medium">
                                 <tr>
-                                    <th class="px-6 py-4">Grup</th>
-                                    <th class="px-6 py-4">Order ID</th>
-                                    <th class="px-6 py-4">Masa Aktif</th>
-                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 whitespace-nowrap">Grup</th>
+                                    <th class="px-6 py-4 whitespace-nowrap">Order ID</th>
+                                    <th class="px-6 py-4 whitespace-nowrap">Masa Aktif</th>
+                                    <th class="px-6 py-4 whitespace-nowrap">Status</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-white/5">
@@ -301,15 +301,15 @@
                                                 <div class="text-[10px] text-zinc-500 font-mono truncate max-w-[200px]" title="<%= group.jid || 'N/A' %>"><%= group.jid || 'N/A' %></div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 font-mono text-xs text-purple-400"><%= group.orderId %></td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 font-mono text-xs text-purple-400 whitespace-nowrap"><%= group.orderId %></td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
                                             <% if(group.expiredAt) { %>
                                                 <div class="countdown-timer font-mono text-xs font-bold text-blue-400" data-expire="<%= group.expiredAt %>">Menghitung...</div>
                                             <% } else { %>
-                                                <span class="text-xs text-zinc-500">Unlimited</span>
+                                                <span class="text-xs font-bold text-blue-400">Unlimited</span>
                                             <% } %>
                                         </td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2.5 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[10px] font-bold">AKTIF</span>
                                         </td>
                                     </tr>
@@ -967,16 +967,16 @@
                     const expireStr = timer.getAttribute('data-expire');
                     if (!expireStr || expireStr === 'undefined' || expireStr === 'null') {
                         timer.innerText = "Unlimited";
-                        timer.classList.remove('text-blue-400');
-                        timer.classList.add('text-zinc-500');
+                        timer.classList.remove('text-zinc-500');
+                        timer.classList.add('text-blue-400');
                         return;
                     }
                     
                     const lowerStr = expireStr.toLowerCase().trim();
                     if (lowerStr === 'permanent' || lowerStr === 'unlimited' || lowerStr === '0' || lowerStr === '-1') {
                         timer.innerText = "Permanent";
-                        timer.classList.remove('text-blue-400');
-                        timer.classList.add('text-zinc-500');
+                        timer.classList.remove('text-zinc-500');
+                        timer.classList.add('text-blue-400');
                         return;
                     }
                     
