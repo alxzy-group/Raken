@@ -737,7 +737,15 @@
                     method: 'POST',
                     body: formData
                 });
-                const data = await res.json();
+                
+                let data;
+                const text = await res.text();
+                try {
+                    data = JSON.parse(text);
+                } catch(e) {
+                    throw new Error(`Server Response Error (HTTP ${res.status}): ` + text.substring(0, 100));
+                }
+                
                 if(data.success) {
                     targetInput.value = data.url;
                     msg.innerText = "Gambar berhasil diupload!";
@@ -750,8 +758,9 @@
                     msg.classList.remove('hidden');
                 }
             } catch(err) {
+                console.error(err);
                 targetInput.value = originalValue;
-                msg.innerText = "Koneksi terputus saat upload.";
+                msg.innerText = err.message || "Koneksi terputus saat upload.";
                 msg.className = "mb-6 px-4 py-3 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20";
                 msg.classList.remove('hidden');
             }

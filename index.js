@@ -10,13 +10,19 @@ const multer = require('multer');
 const pngToIco = require('png-to-ico');
 const fs = require('fs');
 
+// Ensure uploads directory exists at startup
+const UPLOADS_DIR = path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(UPLOADS_DIR)){
+    try {
+        fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    } catch (e) {
+        console.error('Failed to create uploads directory:', e);
+    }
+}
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const dir = path.join(__dirname, 'public', 'uploads');
-        if (!fs.existsSync(dir)){
-            fs.mkdirSync(dir, { recursive: true });
-        }
-        cb(null, dir);
+        cb(null, UPLOADS_DIR);
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname));
