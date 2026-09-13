@@ -7,7 +7,8 @@ const mustika = require('./mustika');
 const config = require('./config');
 const crypto = require('crypto');
 const multer = require('multer');
-const pngToIco = require('png-to-ico');
+const pngToIcoMod = require('png-to-ico');
+const pngToIco = pngToIcoMod.default || pngToIcoMod;
 const fs = require('fs');
 
 // Ensure uploads directory exists at startup
