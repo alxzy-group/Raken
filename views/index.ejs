@@ -1019,7 +1019,7 @@
 
             <!-- Bot Image -->
             <div data-aos="zoom-in" style="margin-bottom: 16px; border-radius: 24px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 20px 60px var(--accent-light);">
-                <img src="https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg" alt="Ravenzena Bot" style="width:240px;height:auto;display:block;">
+                <img src="<%= siteSettings && siteSettings.heroImageUrl ? siteSettings.heroImageUrl : 'https://i.ibb.co.com/23h0hMBg/Beauty-Plus-20260323151557770-save.jpg' %>" alt="<%= siteSettings && siteSettings.siteName ? siteSettings.siteName : 'Ravenzena Bot' %>" style="width:240px;height:auto;display:block;">
             </div>
 
             <!-- Dynamic typing below thumbnail -->
