@@ -567,15 +567,27 @@ app.post('/user/admin/upload', upload.single('file'), async (req, res) => {
         
         if (req.body.convertToIco === 'true') {
             try {
-                // Determine source for png-to-ico (only works with png directly or buf)
-                // Since png-to-ico expects png, we assume it's valid. If it fails, fallback to png URL.
+                const sharp = require('sharp');
+                
                 const icoPath = path.join(__dirname, 'public', 'uploads', Date.now() + '.ico');
-                const buf = await pngToIco(req.file.path);
+                
+                // Convert uploaded image to a 256x256 PNG buffer
+                const pngBuffer = await sharp(req.file.path)
+                    .resize(256, 256, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
+                    .png()
+                    .toBuffer();
+                    
+                // Convert PNG buffer to ICO
+                const buf = await pngToIco(pngBuffer);
                 fs.writeFileSync(icoPath, buf);
+                
+                // Delete original uploaded image to save space
+                if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+                
                 fileUrl = `/uploads/${path.basename(icoPath)}`;
             } catch (err) {
                 console.error('Failed to convert to ICO:', err);
-                // Fallback to the original uploaded file if conversion fails
+                return res.status(500).json({ success: false, message: 'Gagal mengkonversi gambar ke format ICO.' });
             }
         }
         

@@ -474,7 +474,7 @@
                                         <input type="url" id="logoUrl" value="<%= siteSettings && siteSettings.logoUrl ? siteSettings.logoUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
                                         <label class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all" title="Upload Logo">
                                             <i class="fas fa-upload"></i>
-                                            <input type="file" class="hidden" onchange="uploadImage(this, 'logoUrl', false)">
+                                            <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden" onchange="uploadImage(this, 'logoUrl', false)">
                                         </label>
                                     </div>
                                 </div>
@@ -484,7 +484,7 @@
                                         <input type="url" id="faviconUrl" value="<%= siteSettings && siteSettings.faviconUrl ? siteSettings.faviconUrl : '' %>" placeholder="/favicon.png" class="premium-input w-full rounded-lg px-4 py-3">
                                         <label class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all" title="Upload Favicon (Auto convert to ICO)">
                                             <i class="fas fa-upload"></i>
-                                            <input type="file" class="hidden" onchange="uploadImage(this, 'faviconUrl', true)">
+                                            <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden" onchange="uploadImage(this, 'faviconUrl', true)">
                                         </label>
                                     </div>
                                 </div>
@@ -494,7 +494,7 @@
                                         <input type="url" id="heroImageUrl" value="<%= siteSettings && siteSettings.heroImageUrl ? siteSettings.heroImageUrl : '' %>" class="premium-input w-full rounded-lg px-4 py-3">
                                         <label class="bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded-lg px-4 flex items-center justify-center cursor-pointer hover:bg-purple-500/30 transition-all" title="Upload Gambar Hero">
                                             <i class="fas fa-upload"></i>
-                                            <input type="file" class="hidden" onchange="uploadImage(this, 'heroImageUrl', false)">
+                                            <input type="file" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden" onchange="uploadImage(this, 'heroImageUrl', false)">
                                         </label>
                                     </div>
                                 </div>
