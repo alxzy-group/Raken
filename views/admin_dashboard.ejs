@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Kelola pesanan, grup aktif, voucher, dan identitas website.">
-    <title>Admin Dashboard | Ravenzena Bot</title>
+    <title>Admin Dashboard | <%= siteSettings && siteSettings.siteName ? siteSettings.siteName : 'Ravenzena Bot' %></title>
+    <link rel="icon" type="image/x-icon" href="<%= siteSettings && siteSettings.faviconUrl ? siteSettings.faviconUrl : '/favicon.ico' %>">
+    <link rel="icon" type="image/png" href="<%= siteSettings && siteSettings.faviconUrl ? siteSettings.faviconUrl : '/favicon.png' %>">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">

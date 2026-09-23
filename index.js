@@ -470,16 +470,26 @@ app.post('/api/groups/sync', async (req, res) => {
 });
 
 // Admin Routes
-app.get('/user/admin', (req, res) => {
+app.get('/user/admin', async (req, res) => {
     if (getAdminSession(req)) return res.redirect('/user/admin/dashboard');
-    res.render('admin_login', { error: null });
+    const siteSettings = {
+        faviconUrl: await prismaDb.getSetting('site_favicon_url') || await prismaDb.getSetting('site_logo_url') || '/favicon.png',
+        siteName: await prismaDb.getSetting('site_name') || 'Ravenzena Bot'
+    };
+    res.render('admin_login', { error: null, siteSettings });
 });
 
-app.post('/user/admin', (req, res) => {
+app.post('/user/admin', async (req, res) => {
     const ip = req.ip || req.socket.remoteAddress || 'unknown';
     const attempt = loginAttempts.get(ip) || { count: 0, resetAt: Date.now() + 15 * 60 * 1000 };
     if (attempt.resetAt < Date.now()) { attempt.count = 0; attempt.resetAt = Date.now() + 15 * 60 * 1000; }
-    if (attempt.count >= 8) return res.status(429).render('admin_login', { error: 'Terlalu banyak percobaan. Coba lagi nanti.' });
+    if (attempt.count >= 8) {
+        const siteSettings = {
+            faviconUrl: await prismaDb.getSetting('site_favicon_url') || await prismaDb.getSetting('site_logo_url') || '/favicon.png',
+            siteName: await prismaDb.getSetting('site_name') || 'Ravenzena Bot'
+        };
+        return res.status(429).render('admin_login', { error: 'Terlalu banyak percobaan. Coba lagi nanti.', siteSettings });
+    }
 
     const { username, password } = req.body;
     const valid = safeEqual(username, 'admin') && safeEqual(password, config.ADMIN_PASSWORD);
@@ -497,7 +507,11 @@ app.post('/user/admin', (req, res) => {
     }
     attempt.count += 1;
     loginAttempts.set(ip, attempt);
-    res.status(401).render('admin_login', { error: 'Username atau password tidak cocok.' });
+    const siteSettings = {
+        faviconUrl: await prismaDb.getSetting('site_favicon_url') || await prismaDb.getSetting('site_logo_url') || '/favicon.png',
+        siteName: await prismaDb.getSetting('site_name') || 'Ravenzena Bot'
+    };
+    res.status(401).render('admin_login', { error: 'Username atau password tidak cocok.', siteSettings });
 });
 
 app.get('/user/admin/dashboard', requireAdmin, async (req, res) => {
