@@ -256,6 +256,7 @@ app.post('/checkout', async (req, res) => {
             };
         } else {
             trx = await austin.createTransaction(orderId, harga);
+            if (trx.amount) harga = trx.amount;
         }
 
         const orderData = {
@@ -365,7 +366,7 @@ app.get('/status/:id', async (req, res) => {
             }
 
             // Cek status asli ke AustinPay
-            const detail = await austin.getTransactionDetail(order.pakasir);
+            const detail = await austin.getTransactionDetail(order.ref_no);
             if (detail && detail.status === 'success') {
                 await prismaDb.updateOrderStatus(id, 'PAID');
                 return res.json({ status: 'PAID' });
@@ -722,7 +723,7 @@ async function pollPendingPayments() {
 
         for (const order of onlyPending) {
             try {
-                const detail = await austin.getTransactionDetail(order.pakasir);
+                const detail = await austin.getTransactionDetail(order.ref_no);
                 if (detail && detail.status === 'success') {
                     await prismaDb.updateOrderStatus(order.id, 'PAID');
                     // Invalidate cache agar bot langsung ambil data terbaru

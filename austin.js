@@ -78,6 +78,7 @@ async function createTransaction(orderId, amount) {
         return {
             payment_number: depositObj.qr_image || depositObj.qr_url || (depositObj.qr_string ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(depositObj.qr_string)}` : ''),
             ref_no: depositObj.transaction_id,
+            amount: depositObj.amount || depositObj.total_amount || amount,
             expired_at: 'PERMANENT'
         };
     } catch (error) {
