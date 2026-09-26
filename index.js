@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const prismaDb = require('./prisma_db');
-const mustika = require('./mustika');
+const austin = require('./austin');
 const config = require('./config');
 const crypto = require('crypto');
 const multer = require('multer');
@@ -255,7 +255,7 @@ app.post('/checkout', async (req, res) => {
                 expired_at: expiredWIB
             };
         } else {
-            trx = await mustika.createTransaction(orderId, harga);
+            trx = await austin.createTransaction(orderId, harga);
         }
 
         const orderData = {
@@ -332,7 +332,7 @@ app.post('/cancel/:id', async (req, res) => {
         const order = await prismaDb.getOrder(id);
 
         if (order && order.status === 'PENDING') {
-            await mustika.cancelTransaction(order.id, order.harga);
+            await austin.cancelTransaction(order.id, order.harga);
             await prismaDb.updateOrderStatus(id, 'CANCELLED');
             res.json({ success: true, message: 'Transaksi berhasil dibatalkan.' });
         } else {
@@ -364,8 +364,8 @@ app.get('/status/:id', async (req, res) => {
                 return res.json({ status: 'PENDING' });
             }
 
-            // Cek status asli ke MustikaPay
-            const detail = await mustika.getTransactionDetail(order.pakasir);
+            // Cek status asli ke AustinPay
+            const detail = await austin.getTransactionDetail(order.pakasir);
             if (detail && detail.status === 'success') {
                 await prismaDb.updateOrderStatus(id, 'PAID');
                 return res.json({ status: 'PAID' });
@@ -523,7 +523,8 @@ app.get('/user/admin/dashboard', requireAdmin, async (req, res) => {
         const activeGroups = await prismaDb.getActiveGroups();
         const telegramBotToken = await prismaDb.getSetting('telegram_bot_token') || '';
         const telegramOwnerId = await prismaDb.getSetting('telegram_owner_id') || '';
-        const mustikaApiKey = await prismaDb.getSetting('mustika_api_key') || '';
+        const austinApiKey = await prismaDb.getSetting('austin_api_key') || '';
+        const austinApiSecret = await prismaDb.getSetting('austin_api_secret') || '';
         const vouchers = await prismaDb.getAllVouchers();
         const siteSettings = {
             siteName: await prismaDb.getSetting('site_name') || 'Ravenzena Bot',
@@ -543,7 +544,8 @@ app.get('/user/admin/dashboard', requireAdmin, async (req, res) => {
             activeGroups,
             telegramBotToken,
             telegramOwnerId,
-            mustikaApiKey,
+            austinApiKey,
+            austinApiSecret,
             vouchers,
             siteSettings
         });
@@ -623,7 +625,7 @@ app.post('/user/admin/settings', async (req, res) => {
     try {
         if (!getAdminSession(req)) return res.status(403).json({ success: false, message: 'Akses ditolak.' });
 
-        const { telegramBotToken, telegramOwnerId, mustikaApiKey, siteName, logoUrl, faviconUrl, heroImageUrl, siteDescription, whatsappNumber1, whatsappNumber2, whatsappNumber3, whatsappNumber4, freeGroupLink } = req.body;
+        const { telegramBotToken, telegramOwnerId, austinApiKey, austinApiSecret, siteName, logoUrl, faviconUrl, heroImageUrl, siteDescription, whatsappNumber1, whatsappNumber2, whatsappNumber3, whatsappNumber4, freeGroupLink } = req.body;
 
         if (![logoUrl, faviconUrl, heroImageUrl].every(isValidExternalImage)) {
             return res.status(400).json({ success: false, message: 'URL gambar harus menggunakan http atau https yang valid atau path relatif.' });
@@ -631,7 +633,8 @@ app.post('/user/admin/settings', async (req, res) => {
 
         await prismaDb.setSetting('telegram_bot_token', String(telegramBotToken || '').trim());
         await prismaDb.setSetting('telegram_owner_id', String(telegramOwnerId || '').trim());
-        await prismaDb.setSetting('mustika_api_key', String(mustikaApiKey || '').trim());
+        await prismaDb.setSetting('austin_api_key', String(austinApiKey || '').trim());
+        await prismaDb.setSetting('austin_api_secret', String(austinApiSecret || '').trim());
         
         await prismaDb.setSetting('site_name', String(siteName || '').trim());
         await prismaDb.setSetting('site_logo_url', String(logoUrl || '').trim());
@@ -705,7 +708,7 @@ app.get('/user/admin/logout', (req, res) => {
 
 
 // =============================================
-// BACKGROUND POLLER: Cek pembayaran PENDING ke MustikaPay setiap 12 detik
+// BACKGROUND POLLER: Cek pembayaran PENDING ke AustinPay setiap 12 detik
 // Tidak bergantung pada browser user tetap terbuka
 // =============================================
 async function pollPendingPayments() {
@@ -715,11 +718,11 @@ async function pollPendingPayments() {
 
         if (onlyPending.length === 0) return;
 
-        console.log(`[POLLER] Mengecek ${onlyPending.length} order PENDING ke MustikaPay...`);
+        console.log(`[POLLER] Mengecek ${onlyPending.length} order PENDING ke AustinPay...`);
 
         for (const order of onlyPending) {
             try {
-                const detail = await mustika.getTransactionDetail(order.pakasir);
+                const detail = await austin.getTransactionDetail(order.pakasir);
                 if (detail && detail.status === 'success') {
                     await prismaDb.updateOrderStatus(order.id, 'PAID');
                     // Invalidate cache agar bot langsung ambil data terbaru
@@ -732,7 +735,7 @@ async function pollPendingPayments() {
             }
         }
     } catch (e) {
-        console.error('[POLLER] Error saat polling MustikaPay:', e.message);
+        console.error('[POLLER] Error saat polling AustinPay:', e.message);
     }
 }
 

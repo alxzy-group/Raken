@@ -1272,7 +1272,7 @@
                 <!-- QRIS -->
                 <div style="position:relative;display:inline-block;margin-bottom:24px;">
                     <div class="qris-wrap">
-                        <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrisData)" alt="QRIS" style="width:240px;height:240px;border-radius:8px;">
+                        <img :src="qrisData" alt="QRIS" style="width:240px;height:240px;border-radius:8px;" onerror="this.parentElement.innerHTML='<div style=\'padding:20px;text-align:center;font-size:12px;font-weight:bold;color:var(--danger)\'>QR gagal dimuat. Refresh halaman.</div>'">
                     </div>
 
                     <!-- Status overlays -->
@@ -1343,7 +1343,7 @@
                     <span style="font-size:11px;color:var(--text-dim);">Pembayaran didukung oleh:</span>
                     <div style="display:flex;align-items:center;gap:10px;opacity:.5;filter:grayscale(1);transition:all .3s;" onmouseover="this.style.opacity='1';this.style.filter='grayscale(0)'" onmouseout="this.style.opacity='.5';this.style.filter='grayscale(1)'">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" alt="QRIS" style="height:20px;">
-                        <span style="font-size:13px;font-weight:700;">MustikaPay</span>
+                        <span style="font-size:13px;font-weight:700;">AustinPay</span>
                     </div>
                 </div>
             </div>
