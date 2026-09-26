@@ -368,11 +368,11 @@ app.get('/status/:id', async (req, res) => {
                 return res.json({ status: 'PENDING' });
             }
 
-            // Cek status asli ke AustinPay (dengan rate limit 15 detik)
+            // Cek status asli ke AustinPay (dengan rate limit 30 detik)
             const now = Date.now();
             const lastCheck = austinRateLimitCache.get(order.ref_no) || 0;
             
-            if (now - lastCheck > 15000) {
+            if (now - lastCheck > 30000) {
                 austinRateLimitCache.set(order.ref_no, now);
                 const detail = await austin.getTransactionDetail(order.ref_no);
                 if (detail && detail.status === 'success') {
@@ -732,11 +732,11 @@ async function pollPendingPayments() {
 
         for (const order of onlyPending) {
             try {
-                // Rate limit 15 detik agar tidak kena 429 Too Many Requests
+                // Rate limit 30 detik agar tidak kena 429 Too Many Requests dari IP VPS
                 const now = Date.now();
                 const lastCheck = austinRateLimitCache.get(order.ref_no) || 0;
                 
-                if (now - lastCheck > 15000) {
+                if (now - lastCheck > 30000) {
                     austinRateLimitCache.set(order.ref_no, now);
                     const detail = await austin.getTransactionDetail(order.ref_no);
                     if (detail && detail.status === 'success') {
@@ -746,6 +746,8 @@ async function pollPendingPayments() {
                         apiCache.lastUpdate.clear();
                         console.log(`[POLLER] ✅ Order ${order.id} berhasil diupdate ke PAID.`);
                     }
+                    // Jeda 2 detik tiap ngecek order agar IP VPS tidak nyepam
+                    await new Promise(r => setTimeout(r, 2000));
                 }
             } catch (e) {
                 // Abaikan error per-order, lanjut order berikutnya
@@ -764,9 +766,9 @@ const isServerless = !!(
     process.env.NOW_REGION
 );
 
-// Jalankan poller setiap 20 detik hanya jika bukan di lingkungan Vercel serverless
+// Jalankan poller setiap 30 detik hanya jika bukan di lingkungan Vercel serverless
 if (!isServerless) {
-    setInterval(pollPendingPayments, 20000);
+    setInterval(pollPendingPayments, 30000);
     pollPendingPayments().catch(err => console.error('[POLLER] Initial poll error:', err));
 }
 
