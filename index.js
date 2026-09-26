@@ -374,13 +374,15 @@ app.get('/status/:id', async (req, res) => {
             
             if (now - lastCheck > 30000) {
                 austinRateLimitCache.set(order.ref_no, now);
-                const detail = await austin.getTransactionDetail(order.ref_no);
-                if (detail && detail.status === 'success') {
-                    await prismaDb.updateOrderStatus(id, 'PAID');
-                    return res.json({ status: 'PAID' });
-                } else if (detail && detail.status === 'failed') {
-                    await prismaDb.updateOrderStatus(id, 'CANCELLED');
-                    return res.json({ status: 'CANCELLED' });
+                const checkResult = await austin.getTransactionDetail(order.ref_no);
+                if (checkResult.success) {
+                    if (checkResult.status === 'paid') {
+                        await prismaDb.updateOrderStatus(id, 'PAID');
+                        return res.json({ status: 'PAID' });
+                    } else if (checkResult.status === 'expired' || checkResult.status === 'cancel') {
+                        await prismaDb.updateOrderStatus(id, 'CANCELLED');
+                        return res.json({ status: 'CANCELLED' });
+                    }
                 }
             }
         }
@@ -741,22 +743,27 @@ async function pollPendingPayments() {
                 
                 if (now - lastCheck > 30000) {
                     austinRateLimitCache.set(order.ref_no, now);
-                    const detail = await austin.getTransactionDetail(order.ref_no);
-                    if (detail && detail.status === 'success') {
-                        await prismaDb.updateOrderStatus(order.id, 'PAID');
-                        // Invalidate cache agar bot langsung ambil data terbaru
-                        apiCache.orders.clear();
-                        apiCache.lastUpdate.clear();
-                        console.log(`[POLLER] ✅ Order ${order.id} berhasil diupdate ke PAID.`);
-                    } else if (detail && detail.status === 'failed') {
-                        await prismaDb.updateOrderStatus(order.id, 'CANCELLED');
-                        console.log(`[POLLER] ❌ Order ${order.id} expired/gagal, diupdate ke CANCELLED.`);
+                    const checkResult = await austin.getTransactionDetail(order.ref_no);
+                    if (checkResult.success) {
+                        if (checkResult.status === 'paid') {
+                            await prismaDb.updateOrderStatus(order.id, 'PAID');
+                            apiCache.orders.clear();
+                            apiCache.lastUpdate.clear();
+                            console.log(`[POLLER] ✅ Order ${order.id} PAID!`);
+                        } else if (checkResult.status === 'expired' || checkResult.status === 'cancel') {
+                            await prismaDb.updateOrderStatus(order.id, 'CANCELLED');
+                            console.log(`[POLLER] ❌ Order ${order.id} ${checkResult.status} → CANCELLED`);
+                        } else {
+                            console.log(`[POLLER] ⏳ Order ${order.id} masih ${checkResult.status}`);
+                        }
+                    } else {
+                        console.log(`[POLLER] ⚠️ Order ${order.id} gagal cek: ${checkResult.message}`);
                     }
-                    // Jeda 2 detik tiap ngecek order agar IP VPS tidak nyepam
-                    await new Promise(r => setTimeout(r, 2000));
+                    // Jeda 3 detik tiap order
+                    await new Promise(r => setTimeout(r, 3000));
                 }
             } catch (e) {
-                // Abaikan error per-order, lanjut order berikutnya
+                console.error(`[POLLER] Error order ${order.id}:`, e.message);
             }
         }
     } catch (e) {

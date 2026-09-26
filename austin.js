@@ -88,13 +88,30 @@ async function createTransaction(orderId, amount) {
 }
 
 async function cancelTransaction(orderId, amount) {
-    console.log(`[AUSTINPAY CANCEL] Requested cancel for order ${orderId}, amount ${amount}`);
-    return { success: true, message: 'Transaksi dibatalkan secara lokal.' };
+    try {
+        const { apiKey, apiSecret } = await getApiKeys();
+        const path = `/api/deposit/cancel/${orderId}`;
+        const url = `${BASE_URL}${path}`;
+
+        const res = await axios.post(url, '', {
+            headers: await buildHmacHeaders('POST', path, '', apiKey, apiSecret),
+            validateStatus: () => true
+        });
+        const data = res.data;
+        return { success: data.success, message: data.message, status: data.status };
+    } catch (err) {
+        console.error('[AustinPay] cancelTransaction error:', err.message);
+        return { success: false, message: err.message };
+    }
 }
 
+/**
+ * Cek status deposit — persis ngikutin pola referensi alxzy auto order
+ * Return: { success: true/false, status: "paid"/"pending"/"expired", message: "..." }
+ */
 async function getTransactionDetail(refNo) {
     try {
-        if (!refNo) return null;
+        if (!refNo) return { success: false, message: 'No ref_no' };
         const { apiKey, apiSecret } = await getApiKeys();
         const path = `/api/deposit/check/${refNo}`;
         const url = `${BASE_URL}${path}`;
@@ -105,27 +122,24 @@ async function getTransactionDetail(refNo) {
         });
 
         const data = res.data;
-        if (res.status !== 200) {
-            throw new Error(data.message || `HTTP ${res.status}`);
+
+        // Kalau kena rate limit (429) atau server error, return gagal tapi JANGAN crash
+        if (res.status === 429) {
+            console.warn(`[AustinPay] Rate limited for ${refNo}, skip...`);
+            return { success: false, message: 'Rate limited' };
         }
 
-        let mappedStatus = 'pending';
-        const statusField = data.status || (data.data && data.data.status) || (data.deposit && data.deposit.status) || '';
-        const rawStatus = statusField.toLowerCase();
-        if (rawStatus === 'paid' || rawStatus === 'success' || rawStatus === 'sukses') {
-            mappedStatus = 'success';
-        } else if (rawStatus === 'expired' || rawStatus === 'failed' || rawStatus === 'cancel' || rawStatus === 'cancelled') {
-            mappedStatus = 'failed';
+        if (res.status !== 200) {
+            console.warn(`[AustinPay] HTTP ${res.status} for ${refNo}: ${data.message || ''}`);
+            return { success: false, message: data.message || `HTTP ${res.status}` };
         }
-        
-        return {
-            status: mappedStatus,
-            original_status: data.status,
-            message: data.message
-        };
+
+        // Return persis seperti referensi alxzy: { success, status, message }
+        console.log(`[AustinPay] Check ${refNo} => status: ${data.status}, message: ${data.message}`);
+        return { success: true, status: data.status, message: data.message };
     } catch (error) {
         console.error('AustinPay getTransactionDetail error:', error.message);
-        return null;
+        return { success: false, message: error.message };
     }
 }
 
