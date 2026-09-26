@@ -77,7 +77,7 @@ async function createTransaction(orderId, amount) {
         
         return {
             payment_number: depositObj.qr_image || depositObj.qr_url || (depositObj.qr_string ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(depositObj.qr_string)}` : ''),
-            ref_no: depositObj.transaction_id,
+            ref_no: depositObj.transaction_id || depositObj.id,
             amount: depositObj.amount || depositObj.total_amount || amount,
             expired_at: 'PERMANENT'
         };
@@ -110,7 +110,8 @@ async function getTransactionDetail(refNo) {
         }
 
         let mappedStatus = 'pending';
-        const rawStatus = (data.status || '').toLowerCase();
+        const statusField = data.status || (data.data && data.data.status) || (data.deposit && data.deposit.status) || '';
+        const rawStatus = statusField.toLowerCase();
         if (rawStatus === 'paid' || rawStatus === 'success' || rawStatus === 'sukses') {
             mappedStatus = 'success';
         }
