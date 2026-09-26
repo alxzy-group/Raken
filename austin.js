@@ -114,6 +114,8 @@ async function getTransactionDetail(refNo) {
         const rawStatus = statusField.toLowerCase();
         if (rawStatus === 'paid' || rawStatus === 'success' || rawStatus === 'sukses') {
             mappedStatus = 'success';
+        } else if (rawStatus === 'expired' || rawStatus === 'failed' || rawStatus === 'cancel' || rawStatus === 'cancelled') {
+            mappedStatus = 'failed';
         }
         
         return {
