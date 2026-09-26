@@ -378,6 +378,9 @@ app.get('/status/:id', async (req, res) => {
                 if (detail && detail.status === 'success') {
                     await prismaDb.updateOrderStatus(id, 'PAID');
                     return res.json({ status: 'PAID' });
+                } else if (detail && detail.status === 'failed') {
+                    await prismaDb.updateOrderStatus(id, 'CANCELLED');
+                    return res.json({ status: 'CANCELLED' });
                 }
             }
         }
@@ -745,6 +748,9 @@ async function pollPendingPayments() {
                         apiCache.orders.clear();
                         apiCache.lastUpdate.clear();
                         console.log(`[POLLER] ✅ Order ${order.id} berhasil diupdate ke PAID.`);
+                    } else if (detail && detail.status === 'failed') {
+                        await prismaDb.updateOrderStatus(order.id, 'CANCELLED');
+                        console.log(`[POLLER] ❌ Order ${order.id} expired/gagal, diupdate ke CANCELLED.`);
                     }
                     // Jeda 2 detik tiap ngecek order agar IP VPS tidak nyepam
                     await new Promise(r => setTimeout(r, 2000));
