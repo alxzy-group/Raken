@@ -35,6 +35,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Cache untuk rate limit AustinPay (mencegah 429 Too Many Requests)
+const austinRateLimitCache = new Map();
+
 // Short-lived in-memory sessions keep the admin password out of browser cookies.
 const adminSessions = new Map();
 const loginAttempts = new Map();
@@ -365,11 +368,17 @@ app.get('/status/:id', async (req, res) => {
                 return res.json({ status: 'PENDING' });
             }
 
-            // Cek status asli ke AustinPay
-            const detail = await austin.getTransactionDetail(order.ref_no);
-            if (detail && detail.status === 'success') {
-                await prismaDb.updateOrderStatus(id, 'PAID');
-                return res.json({ status: 'PAID' });
+            // Cek status asli ke AustinPay (dengan rate limit 15 detik)
+            const now = Date.now();
+            const lastCheck = austinRateLimitCache.get(order.ref_no) || 0;
+            
+            if (now - lastCheck > 15000) {
+                austinRateLimitCache.set(order.ref_no, now);
+                const detail = await austin.getTransactionDetail(order.ref_no);
+                if (detail && detail.status === 'success') {
+                    await prismaDb.updateOrderStatus(id, 'PAID');
+                    return res.json({ status: 'PAID' });
+                }
             }
         }
 
@@ -723,13 +732,20 @@ async function pollPendingPayments() {
 
         for (const order of onlyPending) {
             try {
-                const detail = await austin.getTransactionDetail(order.ref_no);
-                if (detail && detail.status === 'success') {
-                    await prismaDb.updateOrderStatus(order.id, 'PAID');
-                    // Invalidate cache agar bot langsung ambil data terbaru
-                    apiCache.orders.clear();
-                    apiCache.lastUpdate.clear();
-                    console.log(`[POLLER] ✅ Order ${order.id} berhasil diupdate ke PAID.`);
+                // Rate limit 15 detik agar tidak kena 429 Too Many Requests
+                const now = Date.now();
+                const lastCheck = austinRateLimitCache.get(order.ref_no) || 0;
+                
+                if (now - lastCheck > 15000) {
+                    austinRateLimitCache.set(order.ref_no, now);
+                    const detail = await austin.getTransactionDetail(order.ref_no);
+                    if (detail && detail.status === 'success') {
+                        await prismaDb.updateOrderStatus(order.id, 'PAID');
+                        // Invalidate cache agar bot langsung ambil data terbaru
+                        apiCache.orders.clear();
+                        apiCache.lastUpdate.clear();
+                        console.log(`[POLLER] ✅ Order ${order.id} berhasil diupdate ke PAID.`);
+                    }
                 }
             } catch (e) {
                 // Abaikan error per-order, lanjut order berikutnya
@@ -748,9 +764,9 @@ const isServerless = !!(
     process.env.NOW_REGION
 );
 
-// Jalankan poller setiap 12 detik hanya jika bukan di lingkungan Vercel serverless
+// Jalankan poller setiap 20 detik hanya jika bukan di lingkungan Vercel serverless
 if (!isServerless) {
-    setInterval(pollPendingPayments, 12000);
+    setInterval(pollPendingPayments, 20000);
     pollPendingPayments().catch(err => console.error('[POLLER] Initial poll error:', err));
 }
 
