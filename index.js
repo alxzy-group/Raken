@@ -370,11 +370,11 @@ app.get('/status/:id', async (req, res) => {
 
             // Cek status asli ke AustinPay (dengan rate limit 30 detik)
             const now = Date.now();
-            const lastCheck = austinRateLimitCache.get(order.ref_no) || 0;
+            const lastCheck = austinRateLimitCache.get(order.pakasir) || 0;
             
             if (now - lastCheck > 30000) {
-                austinRateLimitCache.set(order.ref_no, now);
-                const checkResult = await austin.getTransactionDetail(order.ref_no);
+                austinRateLimitCache.set(order.pakasir, now);
+                const checkResult = await austin.getTransactionDetail(order.pakasir);
                 if (checkResult.success) {
                     if (checkResult.status === 'paid') {
                         await prismaDb.updateOrderStatus(id, 'PAID');
@@ -739,11 +739,11 @@ async function pollPendingPayments() {
             try {
                 // Rate limit 30 detik agar tidak kena 429 Too Many Requests dari IP VPS
                 const now = Date.now();
-                const lastCheck = austinRateLimitCache.get(order.ref_no) || 0;
+                const lastCheck = austinRateLimitCache.get(order.pakasir) || 0;
                 
                 if (now - lastCheck > 30000) {
-                    austinRateLimitCache.set(order.ref_no, now);
-                    const checkResult = await austin.getTransactionDetail(order.ref_no);
+                    austinRateLimitCache.set(order.pakasir, now);
+                    const checkResult = await austin.getTransactionDetail(order.pakasir);
                     if (checkResult.success) {
                         if (checkResult.status === 'paid') {
                             await prismaDb.updateOrderStatus(order.id, 'PAID');
