@@ -110,7 +110,8 @@ async function getTransactionDetail(refNo) {
         }
 
         let mappedStatus = 'pending';
-        if (data.status === 'PAID' || data.status === 'success') {
+        const rawStatus = (data.status || '').toLowerCase();
+        if (rawStatus === 'paid' || rawStatus === 'success' || rawStatus === 'sukses') {
             mappedStatus = 'success';
         }
         
