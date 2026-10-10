@@ -109,6 +109,59 @@
             color: #a855f7;
             transform: scale(1.1);
         }
+
+        /* Bot Status & Lampu Kedip Indicator */
+        .bot-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 11px;
+            border-radius: 9999px;
+            font-size: 11.5px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all .2s ease;
+        }
+        .bot-status-pill.pill-ready {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34D399;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+        }
+        .bot-status-pill.pill-full {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #F87171;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+        }
+        .status-lamp {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+        .status-lamp.lamp-ready {
+            background-color: #10B981;
+            box-shadow: 0 0 8px #10B981;
+            animation: blink-lamp-green 1.4s infinite ease-in-out;
+        }
+        .status-lamp.lamp-full {
+            background-color: #EF4444;
+            box-shadow: 0 0 8px #EF4444;
+            animation: blink-lamp-red 2s infinite ease-in-out;
+        }
+        @keyframes blink-lamp-green {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 6px #10B981; opacity: 1; }
+            50% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 0 14px #10B981; opacity: 0.85; }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 0 6px #10B981; opacity: 1; }
+        }
+        @keyframes blink-lamp-red {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 6px #EF4444; opacity: 1; }
+            50% { transform: scale(1.1); box-shadow: 0 0 12px #EF4444; opacity: 0.6; }
+        }
     </style>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -144,6 +197,9 @@
                 </div>
 
                 <div class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 ml-2 mt-6">Konfigurasi</div>
+                <div class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-zinc-300" data-target="section-slots" onclick="switchTab('section-slots')">
+                    <i class="fas fa-server w-5 text-center"></i> Slot & Status Bot
+                </div>
                 <div class="nav-item flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-zinc-300" data-target="section-pricing" onclick="switchTab('section-pricing')">
                     <i class="fas fa-tags w-5 text-center"></i> Harga Paket
                 </div>
@@ -191,6 +247,118 @@
                         <div>
                             <p class="text-zinc-400 text-sm font-medium">Grup Aktif</p>
                             <h3 class="text-3xl font-bold text-white"><%= activeGroups.length %></h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-Time Bot Status & Slots Overview -->
+                <% 
+                   const bStore = (typeof botStatus !== 'undefined' && botStatus.store) ? botStatus.store : { isReady: true, status: 'open', remainingSlots: 20, maxSlots: 20, usedSlots: 0 };
+                   const bGuild = (typeof botStatus !== 'undefined' && (botStatus.v3 || botStatus.guild)) ? (botStatus.v3 || botStatus.guild) : { isReady: true, status: 'open', remainingSlots: 15, maxSlots: 15, usedSlots: 0 };
+                   const bCc = (typeof botStatus !== 'undefined' && botStatus.cc) ? botStatus.cc : { isReady: true, status: 'open', remainingSlots: 10, maxSlots: 10, usedSlots: 0 };
+                %>
+                <div class="glass-card p-6 mb-8">
+                    <div class="flex items-center justify-between mb-6 border-b border-white/10 pb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                                <i class="fas fa-server text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-white tracking-tight">Ketersediaan & Slot Bot (Realtime)</h3>
+                                <p class="text-xs text-zinc-400">Lampu hijau kedip = Ready. Lampu merah = Full Slot / Tutup (Jika nomor bot terkena ban).</p>
+                            </div>
+                        </div>
+                        <button type="button" onclick="switchTab('section-slots')" class="text-xs text-purple-400 hover:text-purple-300 font-semibold flex items-center gap-1.5 transition-colors">
+                            Atur Slot Detail <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <!-- Bot Store Widget -->
+                        <div class="bg-[#121214] border border-white/5 rounded-2xl p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center text-sm">
+                                            <i class="fas fa-store"></i>
+                                        </div>
+                                        <h4 class="font-bold text-white text-base">Bot Store</h4>
+                                    </div>
+                                    <span id="overview_badge_store" class="bot-status-pill <%= bStore.isReady ? 'pill-ready' : 'pill-full' %>">
+                                        <span class="status-lamp <%= bStore.isReady ? 'lamp-ready' : 'lamp-full' %>"></span>
+                                        <span class="status-text"><%= bStore.badgeText || (bStore.isReady ? 'Ready' : 'Full Slot') %></span>
+                                    </span>
+                                </div>
+                                <p class="text-xs text-zinc-400 mb-3">
+                                    Kapasitas: <span id="overview_rem_store" class="font-bold text-white"><%= bStore.remainingSlots %></span> / <%= bStore.maxSlots %> slot tersisa
+                                </p>
+                                <div class="w-full bg-zinc-800 rounded-full h-1.5 mb-4 overflow-hidden">
+                                    <% const storePct = bStore.maxSlots > 0 ? Math.min(100, (bStore.usedSlots / bStore.maxSlots) * 100) : 0; %>
+                                    <div id="overview_bar_store" class="h-1.5 rounded-full <%= bStore.isReady ? 'bg-sky-500' : 'bg-red-500' %>" style="width: <%= storePct %>%"></div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="toggleBotSlotQuick('store')" id="quick_btn_store" class="w-full py-2 px-3 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-2 <%= bStore.status === 'open' ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-green-500/30 text-green-400 hover:bg-green-500/10' %>">
+                                <i class="fas <%= bStore.status === 'open' ? 'fa-power-off' : 'fa-play' %>"></i>
+                                <span><%= bStore.status === 'open' ? 'Tutup Bot' : 'Buka Bot' %></span>
+                            </button>
+                        </div>
+
+                        <!-- Bot Guild Widget -->
+                        <div class="bg-[#121214] border border-white/5 rounded-2xl p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <h4 class="font-bold text-white text-base">Bot Guild</h4>
+                                    </div>
+                                    <span id="overview_badge_v3" class="bot-status-pill <%= bGuild.isReady ? 'pill-ready' : 'pill-full' %>">
+                                        <span class="status-lamp <%= bGuild.isReady ? 'lamp-ready' : 'lamp-full' %>"></span>
+                                        <span class="status-text"><%= bGuild.badgeText || (bGuild.isReady ? 'Ready' : 'Full Slot') %></span>
+                                    </span>
+                                </div>
+                                <p class="text-xs text-zinc-400 mb-3">
+                                    Kapasitas: <span id="overview_rem_v3" class="font-bold text-white"><%= bGuild.remainingSlots %></span> / <%= bGuild.maxSlots %> slot tersisa
+                                </p>
+                                <div class="w-full bg-zinc-800 rounded-full h-1.5 mb-4 overflow-hidden">
+                                    <% const guildPct = bGuild.maxSlots > 0 ? Math.min(100, (bGuild.usedSlots / bGuild.maxSlots) * 100) : 0; %>
+                                    <div id="overview_bar_v3" class="h-1.5 rounded-full <%= bGuild.isReady ? 'bg-purple-500' : 'bg-red-500' %>" style="width: <%= guildPct %>%"></div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="toggleBotSlotQuick('v3')" id="quick_btn_v3" class="w-full py-2 px-3 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-2 <%= bGuild.status === 'open' ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-green-500/30 text-green-400 hover:bg-green-500/10' %>">
+                                <i class="fas <%= bGuild.status === 'open' ? 'fa-power-off' : 'fa-play' %>"></i>
+                                <span><%= bGuild.status === 'open' ? 'Tutup Bot' : 'Buka Bot' %></span>
+                            </button>
+                        </div>
+
+                        <!-- Bot CC Widget -->
+                        <div class="bg-[#121214] border border-white/5 rounded-2xl p-5 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <h4 class="font-bold text-white text-base">Bot CC</h4>
+                                    </div>
+                                    <span id="overview_badge_cc" class="bot-status-pill <%= bCc.isReady ? 'pill-ready' : 'pill-full' %>">
+                                        <span class="status-lamp <%= bCc.isReady ? 'lamp-ready' : 'lamp-full' %>"></span>
+                                        <span class="status-text"><%= bCc.badgeText || (bCc.isReady ? 'Ready' : 'Full Slot') %></span>
+                                    </span>
+                                </div>
+                                <p class="text-xs text-zinc-400 mb-3">
+                                    Kapasitas: <span id="overview_rem_cc" class="font-bold text-white"><%= bCc.remainingSlots %></span> / <%= bCc.maxSlots %> slot tersisa
+                                </p>
+                                <div class="w-full bg-zinc-800 rounded-full h-1.5 mb-4 overflow-hidden">
+                                    <% const ccPct = bCc.maxSlots > 0 ? Math.min(100, (bCc.usedSlots / bCc.maxSlots) * 100) : 0; %>
+                                    <div id="overview_bar_cc" class="h-1.5 rounded-full <%= bCc.isReady ? 'bg-amber-500' : 'bg-red-500' %>" style="width: <%= ccPct %>%"></div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="toggleBotSlotQuick('cc')" id="quick_btn_cc" class="w-full py-2 px-3 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-2 <%= bCc.status === 'open' ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-green-500/30 text-green-400 hover:bg-green-500/10' %>">
+                                <i class="fas <%= bCc.status === 'open' ? 'fa-power-off' : 'fa-play' %>"></i>
+                                <span><%= bCc.status === 'open' ? 'Tutup Bot' : 'Buka Bot' %></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -320,6 +488,246 @@
                             </div>
                         <% } %>
                     </div>
+                </div>
+            </div>
+
+            <!-- SECTION: SLOTS -->
+            <div id="section-slots" class="tab-content hidden fade-in">
+                <div class="max-w-5xl">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-white tracking-tight mb-2">Manajemen Slot & Status Bot</h2>
+                            <p class="text-zinc-400">Atur batas slot bot, mode perhitungan, serta buka/tutup pesanan jika nomor bot terkena ban permanent atau kendala.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-zinc-400">Preview:</span>
+                            <span class="bot-status-pill pill-ready"><span class="status-lamp lamp-ready"></span> Ready</span>
+                            <span class="bot-status-pill pill-full"><span class="status-lamp lamp-full"></span> Full Slot</span>
+                        </div>
+                    </div>
+
+                    <% 
+                       const cfgStore = (typeof botSlotsConfig !== 'undefined' && botSlotsConfig.store) ? botSlotsConfig.store : { status: 'open', maxSlots: 20, usedSlots: 0, mode: 'auto' };
+                       const cfgGuild = (typeof botSlotsConfig !== 'undefined' && (botSlotsConfig.v3 || botSlotsConfig.guild)) ? (botSlotsConfig.v3 || botSlotsConfig.guild) : { status: 'open', maxSlots: 15, usedSlots: 0, mode: 'auto' };
+                       const cfgCc = (typeof botSlotsConfig !== 'undefined' && botSlotsConfig.cc) ? botSlotsConfig.cc : { status: 'open', maxSlots: 10, usedSlots: 0, mode: 'auto' };
+                    %>
+
+                    <form id="slotsForm" onsubmit="saveBotSlots(event)">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            
+                            <!-- CARD: BOT STORE -->
+                            <div class="glass-card p-6 flex flex-col justify-between border-t-4 border-t-sky-500">
+                                <div>
+                                    <div class="flex items-center justify-between mb-5 border-b border-white/10 pb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                                                <i class="fas fa-store"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-bold text-white text-lg">Bot Store</h3>
+                                                <p class="text-xs text-zinc-400">Tipe bot jualan</p>
+                                            </div>
+                                        </div>
+                                        <span id="slot_badge_store" class="bot-status-pill <%= bStore.isReady ? 'pill-ready' : 'pill-full' %>">
+                                            <span class="status-lamp <%= bStore.isReady ? 'lamp-ready' : 'lamp-full' %>"></span>
+                                            <span class="status-text"><%= bStore.badgeText || (bStore.isReady ? 'Ready' : 'Full Slot') %></span>
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Status Pemesanan</label>
+                                            <select id="slot_store_status" class="premium-input w-full rounded-lg px-4 py-2.5 text-sm" onchange="updateSlotPreview('store')">
+                                                <option value="open" <%= cfgStore.status === 'open' ? 'selected' : '' %>>🟢 Buka (Open - Menerima Order)</option>
+                                                <option value="closed" <%= cfgStore.status === 'closed' ? 'selected' : '' %>>🔴 Tutup (Closed - Kendala / Ban / Full)</option>
+                                            </select>
+                                            <p class="text-[11px] text-zinc-500 mt-1">Pilih Tutup jika nomor bot terkena ban permanent.</p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Maksimal Slot</label>
+                                            <input type="number" id="slot_store_max" value="<%= cfgStore.maxSlots || 20 %>" min="0" class="premium-input w-full rounded-lg px-4 py-2.5 font-mono text-sm" oninput="updateSlotPreview('store')">
+                                            <p class="text-[11px] text-zinc-500 mt-1">Contoh: 20 slot.</p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Mode Hitung Terpakai</label>
+                                            <select id="slot_store_mode" class="premium-input w-full rounded-lg px-4 py-2.5 text-sm" onchange="updateSlotPreview('store')">
+                                                <option value="auto" <%= (cfgStore.mode || 'auto') === 'auto' ? 'selected' : '' %>>Otomatis (Sesuai Grup DB)</option>
+                                                <option value="manual" <%= cfgStore.mode === 'manual' ? 'selected' : '' %>>Manual (Input Angka Sendiri)</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Slot Terpakai Manual</label>
+                                            <input type="number" id="slot_store_used" value="<%= cfgStore.usedSlots || 0 %>" min="0" class="premium-input w-full rounded-lg px-4 py-2.5 font-mono text-sm" oninput="updateSlotPreview('store')">
+                                            <p class="text-[11px] text-zinc-500 mt-1">Digunakan saat mode manual atau menambah kuota terpakai.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-white/5 bg-black/20 rounded-xl p-3">
+                                    <div class="flex justify-between text-xs text-zinc-400 mb-1">
+                                        <span>Grup aktif di DB:</span>
+                                        <span id="slot_store_db_info" class="font-mono text-zinc-200"><%= bStore.activeDbGroups || 0 %> grup</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-zinc-400 mb-1">
+                                        <span>Total terpakai:</span>
+                                        <span id="slot_store_used_info" class="font-mono text-zinc-200"><%= bStore.usedSlots || 0 %></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs font-semibold text-white">
+                                        <span>Sisa Slot:</span>
+                                        <span id="slot_store_rem_info" class="font-mono <%= bStore.remainingSlots > 0 ? 'text-green-400' : 'text-red-400' %>"><%= bStore.remainingSlots %> slot</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CARD: BOT GUILD -->
+                            <div class="glass-card p-6 flex flex-col justify-between border-t-4 border-t-purple-500">
+                                <div>
+                                    <div class="flex items-center justify-between mb-5 border-b border-white/10 pb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                                                <i class="fas fa-users"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-bold text-white text-lg">Bot Guild</h3>
+                                                <p class="text-xs text-zinc-400">Tipe bot komunitas / game</p>
+                                            </div>
+                                        </div>
+                                        <span id="slot_badge_v3" class="bot-status-pill <%= bGuild.isReady ? 'pill-ready' : 'pill-full' %>">
+                                            <span class="status-lamp <%= bGuild.isReady ? 'lamp-ready' : 'lamp-full' %>"></span>
+                                            <span class="status-text"><%= bGuild.badgeText || (bGuild.isReady ? 'Ready' : 'Full Slot') %></span>
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Status Pemesanan</label>
+                                            <select id="slot_v3_status" class="premium-input w-full rounded-lg px-4 py-2.5 text-sm" onchange="updateSlotPreview('v3')">
+                                                <option value="open" <%= cfgGuild.status === 'open' ? 'selected' : '' %>>🟢 Buka (Open - Menerima Order)</option>
+                                                <option value="closed" <%= cfgGuild.status === 'closed' ? 'selected' : '' %>>🔴 Tutup (Closed - Kendala / Ban / Full)</option>
+                                            </select>
+                                            <p class="text-[11px] text-zinc-500 mt-1">Pilih Tutup jika nomor bot terkena ban permanent.</p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Maksimal Slot</label>
+                                            <input type="number" id="slot_v3_max" value="<%= cfgGuild.maxSlots || 15 %>" min="0" class="premium-input w-full rounded-lg px-4 py-2.5 font-mono text-sm" oninput="updateSlotPreview('v3')">
+                                            <p class="text-[11px] text-zinc-500 mt-1">Contoh: 15 slot.</p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Mode Hitung Terpakai</label>
+                                            <select id="slot_v3_mode" class="premium-input w-full rounded-lg px-4 py-2.5 text-sm" onchange="updateSlotPreview('v3')">
+                                                <option value="auto" <%= (cfgGuild.mode || 'auto') === 'auto' ? 'selected' : '' %>>Otomatis (Sesuai Grup DB)</option>
+                                                <option value="manual" <%= cfgGuild.mode === 'manual' ? 'selected' : '' %>>Manual (Input Angka Sendiri)</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Slot Terpakai Manual</label>
+                                            <input type="number" id="slot_v3_used" value="<%= cfgGuild.usedSlots || 0 %>" min="0" class="premium-input w-full rounded-lg px-4 py-2.5 font-mono text-sm" oninput="updateSlotPreview('v3')">
+                                            <p class="text-[11px] text-zinc-500 mt-1">Digunakan saat mode manual atau menambah kuota terpakai.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-white/5 bg-black/20 rounded-xl p-3">
+                                    <div class="flex justify-between text-xs text-zinc-400 mb-1">
+                                        <span>Grup aktif di DB:</span>
+                                        <span id="slot_v3_db_info" class="font-mono text-zinc-200"><%= bGuild.activeDbGroups || 0 %> grup</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-zinc-400 mb-1">
+                                        <span>Total terpakai:</span>
+                                        <span id="slot_v3_used_info" class="font-mono text-zinc-200"><%= bGuild.usedSlots || 0 %></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs font-semibold text-white">
+                                        <span>Sisa Slot:</span>
+                                        <span id="slot_v3_rem_info" class="font-mono <%= bGuild.remainingSlots > 0 ? 'text-green-400' : 'text-red-400' %>"><%= bGuild.remainingSlots %> slot</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CARD: BOT CC -->
+                            <div class="glass-card p-6 flex flex-col justify-between border-t-4 border-t-amber-500">
+                                <div>
+                                    <div class="flex items-center justify-between mb-5 border-b border-white/10 pb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                                                <i class="fas fa-bolt"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-bold text-white text-lg">Bot CC</h3>
+                                                <p class="text-xs text-zinc-400">Tipe bot performa ekstra</p>
+                                            </div>
+                                        </div>
+                                        <span id="slot_badge_cc" class="bot-status-pill <%= bCc.isReady ? 'pill-ready' : 'pill-full' %>">
+                                            <span class="status-lamp <%= bCc.isReady ? 'lamp-ready' : 'lamp-full' %>"></span>
+                                            <span class="status-text"><%= bCc.badgeText || (bCc.isReady ? 'Ready' : 'Full Slot') %></span>
+                                        </span>
+                                    </div>
+
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Status Pemesanan</label>
+                                            <select id="slot_cc_status" class="premium-input w-full rounded-lg px-4 py-2.5 text-sm" onchange="updateSlotPreview('cc')">
+                                                <option value="open" <%= cfgCc.status === 'open' ? 'selected' : '' %>>🟢 Buka (Open - Menerima Order)</option>
+                                                <option value="closed" <%= cfgCc.status === 'closed' ? 'selected' : '' %>>🔴 Tutup (Closed - Kendala / Ban / Full)</option>
+                                            </select>
+                                            <p class="text-[11px] text-zinc-500 mt-1">Pilih Tutup jika nomor bot terkena ban permanent.</p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Maksimal Slot</label>
+                                            <input type="number" id="slot_cc_max" value="<%= cfgCc.maxSlots || 10 %>" min="0" class="premium-input w-full rounded-lg px-4 py-2.5 font-mono text-sm" oninput="updateSlotPreview('cc')">
+                                            <p class="text-[11px] text-zinc-500 mt-1">Contoh: 10 slot.</p>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Mode Hitung Terpakai</label>
+                                            <select id="slot_cc_mode" class="premium-input w-full rounded-lg px-4 py-2.5 text-sm" onchange="updateSlotPreview('cc')">
+                                                <option value="auto" <%= (cfgCc.mode || 'auto') === 'auto' ? 'selected' : '' %>>Otomatis (Sesuai Grup DB)</option>
+                                                <option value="manual" <%= cfgCc.mode === 'manual' ? 'selected' : '' %>>Manual (Input Angka Sendiri)</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Slot Terpakai Manual</label>
+                                            <input type="number" id="slot_cc_used" value="<%= cfgCc.usedSlots || 0 %>" min="0" class="premium-input w-full rounded-lg px-4 py-2.5 font-mono text-sm" oninput="updateSlotPreview('cc')">
+                                            <p class="text-[11px] text-zinc-500 mt-1">Digunakan saat mode manual atau menambah kuota terpakai.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-6 pt-4 border-t border-white/5 bg-black/20 rounded-xl p-3">
+                                    <div class="flex justify-between text-xs text-zinc-400 mb-1">
+                                        <span>Grup aktif di DB:</span>
+                                        <span id="slot_cc_db_info" class="font-mono text-zinc-200"><%= bCc.activeDbGroups || 0 %> grup</span>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-zinc-400 mb-1">
+                                        <span>Total terpakai:</span>
+                                        <span id="slot_cc_used_info" class="font-mono text-zinc-200"><%= bCc.usedSlots || 0 %></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs font-semibold text-white">
+                                        <span>Sisa Slot:</span>
+                                        <span id="slot_cc_rem_info" class="font-mono <%= bCc.remainingSlots > 0 ? 'text-green-400' : 'text-red-400' %>"><%= bCc.remainingSlots %> slot</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="slotsMessage" class="hidden px-4 py-3 rounded-lg text-sm font-medium mb-6"></div>
+
+                        <div class="flex items-center gap-4">
+                            <button type="submit" id="slotsSubmit" class="bg-purple-500 hover:bg-purple-600 text-white px-8 py-3.5 rounded-xl font-semibold shadow-lg shadow-purple-500/25 transition-all flex items-center gap-2">
+                                <i class="fas fa-save"></i> Simpan Semua Pengaturan Slot
+                            </button>
+                            <button type="button" onclick="loadSlotsConfig()" class="bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10 px-6 py-3.5 rounded-xl font-medium transition-all flex items-center gap-2">
+                                <i class="fas fa-sync-alt"></i> Refresh Data
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -553,6 +961,10 @@
             <i class="fas fa-users text-xl transition-all"></i>
             <span class="text-[10px] font-semibold">Grup</span>
         </div>
+        <div class="nav-item-mobile flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-slots" onclick="switchTab('section-slots')">
+            <i class="fas fa-server text-xl transition-all"></i>
+            <span class="text-[10px] font-semibold">Slot</span>
+        </div>
         <div class="nav-item-mobile flex flex-col items-center gap-1 p-2 text-zinc-500 cursor-pointer" data-target="section-pricing" onclick="switchTab('section-pricing')">
             <i class="fas fa-tags text-xl transition-all"></i>
             <span class="text-[10px] font-semibold">Harga</span>
@@ -605,6 +1017,8 @@
             // Trigger specific load actions per tab
             if(targetId === 'section-pricing') {
                 loadPricingConfig();
+            } else if(targetId === 'section-slots') {
+                loadSlotsConfig();
             }
         }
 
@@ -1025,6 +1439,196 @@
             }
             setInterval(updateCountdowns, 1000);
             updateCountdowns();
+
+        // ==========================================
+        // BOT SLOTS REALTIME MANAGEMENT LOGIC
+        // ==========================================
+        let liveBotSlotsData = null;
+
+        async function loadSlotsConfig() {
+            try {
+                const res = await fetch('/user/admin/slots');
+                const data = await res.json();
+                if (data.success && data.data) {
+                    liveBotSlotsData = data.data;
+                    applySlotsDataToUI(data.data);
+                }
+            } catch (err) {
+                console.error('Failed to load slots config:', err);
+            }
+        }
+
+        function applySlotsDataToUI(data) {
+            const cfg = data.config || {};
+            const st = data.status || {};
+
+            ['store', 'v3', 'cc'].forEach(botId => {
+                const bCfg = cfg[botId] || {};
+                const bSt = st[botId] || {};
+
+                const statusEl = document.getElementById(`slot_${botId}_status`);
+                const maxEl = document.getElementById(`slot_${botId}_max`);
+                const modeEl = document.getElementById(`slot_${botId}_mode`);
+                const usedEl = document.getElementById(`slot_${botId}_used`);
+
+                if (statusEl && bCfg.status) statusEl.value = bCfg.status;
+                if (maxEl && bCfg.maxSlots !== undefined) maxEl.value = bCfg.maxSlots;
+                if (modeEl && bCfg.mode) modeEl.value = bCfg.mode;
+                if (usedEl && bCfg.usedSlots !== undefined) usedEl.value = bCfg.usedSlots;
+
+                updateSlotPreview(botId, bSt.activeDbGroups);
+            });
+        }
+
+        function updateSlotPreview(botId, explicitDbCount) {
+            const statusEl = document.getElementById(`slot_${botId}_status`);
+            const maxEl = document.getElementById(`slot_${botId}_max`);
+            const modeEl = document.getElementById(`slot_${botId}_mode`);
+            const usedEl = document.getElementById(`slot_${botId}_used`);
+            const badgeEl = document.getElementById(`slot_badge_${botId}`);
+
+            if (!statusEl || !maxEl || !modeEl || !usedEl || !badgeEl) return;
+
+            const status = statusEl.value;
+            const max = Math.max(0, parseInt(maxEl.value) || 0);
+            const mode = modeEl.value;
+            const manualUsed = Math.max(0, parseInt(usedEl.value) || 0);
+            
+            let dbCount = 0;
+            if (explicitDbCount !== undefined) {
+                dbCount = explicitDbCount;
+            } else if (liveBotSlotsData && liveBotSlotsData.status && liveBotSlotsData.status[botId]) {
+                dbCount = liveBotSlotsData.status[botId].activeDbGroups || 0;
+            }
+
+            let totalUsed = mode === 'manual' ? manualUsed : (dbCount + manualUsed);
+            let remaining = Math.max(0, max - totalUsed);
+            let isReady = (status === 'open') && (max <= 0 ? true : remaining > 0);
+            let badgeText = isReady ? 'Ready' : 'Full Slot';
+
+            // Update badge in section-slots
+            badgeEl.className = `bot-status-pill ${isReady ? 'pill-ready' : 'pill-full'}`;
+            badgeEl.innerHTML = `<span class="status-lamp ${isReady ? 'lamp-ready' : 'lamp-full'}"></span><span class="status-text">${badgeText}</span>`;
+
+            // Update info text
+            const dbInfoEl = document.getElementById(`slot_${botId}_db_info`);
+            const usedInfoEl = document.getElementById(`slot_${botId}_used_info`);
+            const remInfoEl = document.getElementById(`slot_${botId}_rem_info`);
+            if (dbInfoEl) dbInfoEl.innerText = `${dbCount} grup`;
+            if (usedInfoEl) usedInfoEl.innerText = totalUsed;
+            if (remInfoEl) {
+                remInfoEl.innerText = `${remaining} slot`;
+                remInfoEl.className = `font-mono ${remaining > 0 ? 'text-green-400' : 'text-red-400'}`;
+            }
+
+            // Update overview card if present
+            const ovBadge = document.getElementById(`overview_badge_${botId}`);
+            const ovRem = document.getElementById(`overview_rem_${botId}`);
+            const ovBar = document.getElementById(`overview_bar_${botId}`);
+            const qBtn = document.getElementById(`quick_btn_${botId}`);
+
+            if (ovBadge) {
+                ovBadge.className = `bot-status-pill ${isReady ? 'pill-ready' : 'pill-full'}`;
+                ovBadge.innerHTML = `<span class="status-lamp ${isReady ? 'lamp-ready' : 'lamp-full'}"></span><span class="status-text">${badgeText}</span>`;
+            }
+            if (ovRem) ovRem.innerText = remaining;
+            if (ovBar) {
+                const pct = max > 0 ? Math.min(100, (totalUsed / max) * 100) : 0;
+                ovBar.style.width = `${pct}%`;
+                ovBar.className = `h-1.5 rounded-full ${isReady ? 'bg-sky-500' : 'bg-red-500'}`;
+            }
+            if (qBtn) {
+                const isOpen = status === 'open';
+                qBtn.className = `w-full py-2 px-3 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-2 ${isOpen ? 'border-red-500/30 text-red-400 hover:bg-red-500/10' : 'border-green-500/30 text-green-400 hover:bg-green-500/10'}`;
+                qBtn.innerHTML = `<i class="fas ${isOpen ? 'fa-power-off' : 'fa-play'}"></i><span>${isOpen ? 'Tutup Bot' : 'Buka Bot'}</span>`;
+            }
+        }
+
+        async function saveBotSlots(e) {
+            e.preventDefault();
+            const btn = document.getElementById('slotsSubmit');
+            const msg = document.getElementById('slotsMessage');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            msg.classList.add('hidden');
+
+            const payload = {
+                slots: {
+                    store: {
+                        status: document.getElementById('slot_store_status').value,
+                        maxSlots: document.getElementById('slot_store_max').value,
+                        mode: document.getElementById('slot_store_mode').value,
+                        usedSlots: document.getElementById('slot_store_used').value
+                    },
+                    v3: {
+                        status: document.getElementById('slot_v3_status').value,
+                        maxSlots: document.getElementById('slot_v3_max').value,
+                        mode: document.getElementById('slot_v3_mode').value,
+                        usedSlots: document.getElementById('slot_v3_used').value
+                    },
+                    cc: {
+                        status: document.getElementById('slot_cc_status').value,
+                        maxSlots: document.getElementById('slot_cc_max').value,
+                        mode: document.getElementById('slot_cc_mode').value,
+                        usedSlots: document.getElementById('slot_cc_used').value
+                    }
+                }
+            };
+
+            try {
+                const res = await fetch('/user/admin/slots', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    liveBotSlotsData = data.data;
+                    applySlotsDataToUI(data.data);
+                    msg.innerText = data.message || "Pengaturan slot bot berhasil disimpan dan langsung aktif!";
+                    msg.className = "px-4 py-3 rounded-lg text-sm font-medium mb-6 bg-green-500/10 text-green-400 border border-green-500/20";
+                } else {
+                    msg.innerText = data.message || "Gagal menyimpan slot.";
+                    msg.className = "px-4 py-3 rounded-lg text-sm font-medium mb-6 bg-red-500/10 text-red-400 border border-red-500/20";
+                }
+                msg.classList.remove('hidden');
+            } catch (err) {
+                msg.innerText = "Terjadi kesalahan koneksi saat menyimpan.";
+                msg.className = "px-4 py-3 rounded-lg text-sm font-medium mb-6 bg-red-500/10 text-red-400 border border-red-500/20";
+                msg.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Simpan Semua Pengaturan Slot';
+            }
+        }
+
+        async function toggleBotSlotQuick(botId) {
+            const btn = document.getElementById(`quick_btn_${botId}`);
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            }
+
+            try {
+                const res = await fetch('/user/admin/slots/toggle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ botId })
+                });
+                const data = await res.json();
+                if (data.success && data.data) {
+                    liveBotSlotsData = data.data;
+                    applySlotsDataToUI(data.data);
+                } else {
+                    alert(data.message || 'Gagal mengubah status bot.');
+                }
+            } catch (err) {
+                alert('Terjadi kesalahan jaringan.');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
     </script>
 </body>
 </html>

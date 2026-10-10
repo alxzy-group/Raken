@@ -389,6 +389,97 @@ async function incrementVoucherUsage(id) {
     }
 }
 
+// ====================
+// BOT SLOTS FUNCTIONS
+// ====================
+
+async function getActiveGroupsCount() {
+    try {
+        const storeCount = await prisma.activeGroup.count({ where: { jenisBot: 'store' } });
+        const guildCount = await prisma.activeGroup.count({ where: { jenisBot: { in: ['guild', 'v3', 'V3'] } } });
+        const ccCount = await prisma.activeGroup.count({ where: { jenisBot: { in: ['cc', 'v4', 'V4'] } } });
+        return {
+            store: storeCount,
+            v3: guildCount,
+            guild: guildCount,
+            cc: ccCount
+        };
+    } catch (e) {
+        console.error('Prisma getActiveGroupsCount error:', e);
+        return { store: 0, v3: 0, guild: 0, cc: 0 };
+    }
+}
+
+async function getBotSlotsConfig() {
+    try {
+        const raw = await getSetting('bot_slots_config');
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === 'object') return parsed;
+        }
+    } catch (e) {
+        console.error('Error parsing bot_slots_config:', e);
+    }
+    return {
+        store: { status: 'open', maxSlots: 20, usedSlots: 0, mode: 'auto' },
+        v3: { status: 'open', maxSlots: 15, usedSlots: 0, mode: 'auto' },
+        cc: { status: 'open', maxSlots: 10, usedSlots: 0, mode: 'auto' }
+    };
+}
+
+async function setBotSlotsConfig(configData) {
+    return await setSetting('bot_slots_config', JSON.stringify(configData));
+}
+
+async function getBotSlotsStatus() {
+    const configData = await getBotSlotsConfig();
+    const groupCounts = await getActiveGroupsCount();
+    
+    const defaultConfigs = {
+        store: { status: 'open', maxSlots: 20, usedSlots: 0, mode: 'auto' },
+        v3: { status: 'open', maxSlots: 15, usedSlots: 0, mode: 'auto' },
+        cc: { status: 'open', maxSlots: 10, usedSlots: 0, mode: 'auto' }
+    };
+
+    const statusResult = {};
+    for (const key of ['store', 'v3', 'cc']) {
+        const cfg = (configData && configData[key]) ? configData[key] : defaultConfigs[key];
+        const max = parseInt(cfg.maxSlots) >= 0 ? parseInt(cfg.maxSlots) : defaultConfigs[key].maxSlots;
+        const manualUsed = parseInt(cfg.usedSlots) || 0;
+        const activeDb = groupCounts[key] || 0;
+        
+        let used = 0;
+        if (cfg.mode === 'manual') {
+            used = manualUsed;
+        } else {
+            used = activeDb + manualUsed;
+        }
+
+        const remaining = Math.max(0, max - used);
+        const isOpen = cfg.status === 'open';
+        const isReady = isOpen && (max <= 0 ? true : remaining > 0);
+
+        statusResult[key] = {
+            status: cfg.status || 'open',
+            mode: cfg.mode || 'auto',
+            maxSlots: max,
+            usedSlots: used,
+            manualSlots: manualUsed,
+            activeDbGroups: activeDb,
+            remainingSlots: remaining,
+            isReady: isReady,
+            badgeText: isReady ? 'Ready' : 'Full Slot'
+        };
+    }
+    // Alias guild to v3 so both keys work seamlessly
+    statusResult['guild'] = statusResult['v3'];
+
+    return {
+        config: configData,
+        status: statusResult
+    };
+}
+
 module.exports = { 
     prisma, 
     addOrder, 
@@ -400,6 +491,7 @@ module.exports = {
     updateGroupInfo,
     syncActiveGroups,
     getActiveGroups,
+    getActiveGroupsCount,
     getSetting,
     setSetting,
     sendTelegramNotification,
@@ -407,5 +499,8 @@ module.exports = {
     getAllVouchers,
     getVoucherByCode,
     deleteVoucher,
-    incrementVoucherUsage
+    incrementVoucherUsage,
+    getBotSlotsConfig,
+    setBotSlotsConfig,
+    getBotSlotsStatus
 };

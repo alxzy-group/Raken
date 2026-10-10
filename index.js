@@ -170,6 +170,8 @@ app.get('/', async (req, res) => {
         freeGroupLink: await prismaDb.getSetting('site_free_group_link') || ''
     };
 
+    const botSlotsData = await prismaDb.getBotSlotsStatus();
+
     if (req.query.checkout) {
         try {
             const order = await prismaDb.getOrder(req.query.checkout);
@@ -179,6 +181,7 @@ app.get('/', async (req, res) => {
                     contacts: contacts,
                     infoGroups: infoGroups,
                     siteSettings,
+                    botStatus: botSlotsData.status,
                     orderId: order.id,
                     qris: order.payment_number,
                     harga: order.harga,
@@ -195,6 +198,7 @@ app.get('/', async (req, res) => {
         contacts: contacts,
         infoGroups: infoGroups,
         siteSettings,
+        botStatus: botSlotsData.status,
         orderId: null,
         qris: null,
         harga: 0,
@@ -215,6 +219,17 @@ app.post('/checkout', async (req, res) => {
         const allowedOrderTypes = ['baru', 'perpanjang'];
         if (!validEmail || !validGroupUrl || !allowedBotTypes.includes(jenis_bot) || !allowedOrderTypes.includes(tipe_order) || !paket || !pricingData[jenis_bot] || !pricingData[jenis_bot][paket]) {
             return res.status(400).json({ success: false, message: 'Data tidak valid. Periksa email, link grup, dan pilihan paket.' });
+        }
+
+        // Cek ketersediaan slot bot
+        const botSlotsData = await prismaDb.getBotSlotsStatus();
+        const targetBotKey = jenis_bot === 'guild' ? 'v3' : jenis_bot;
+        if (botSlotsData.status[targetBotKey] && !botSlotsData.status[targetBotKey].isReady) {
+            const botLabel = targetBotKey === 'store' ? 'Bot Store' : (targetBotKey === 'cc' ? 'Bot CC' : 'Bot Guild');
+            return res.status(400).json({ 
+                success: false, 
+                message: `Mohon maaf, slot untuk ${botLabel} saat ini sedang penuh atau ditutup sementara karena kendala operasional.` 
+            });
         }
 
         let harga = pricingData[jenis_bot][paket].harga;
@@ -541,6 +556,7 @@ app.get('/user/admin/dashboard', requireAdmin, async (req, res) => {
         const austinApiKey = await prismaDb.getSetting('austin_api_key') || '';
         const austinApiSecret = await prismaDb.getSetting('austin_api_secret') || '';
         const vouchers = await prismaDb.getAllVouchers();
+        const botSlotsData = await prismaDb.getBotSlotsStatus();
         const siteSettings = {
             siteName: await prismaDb.getSetting('site_name') || 'Ravenzena Bot',
             logoUrl: await prismaDb.getSetting('site_logo_url') || '/favicon.png',
@@ -562,11 +578,85 @@ app.get('/user/admin/dashboard', requireAdmin, async (req, res) => {
             austinApiKey,
             austinApiSecret,
             vouchers,
-            siteSettings
+            siteSettings,
+            botSlotsConfig: botSlotsData.config,
+            botStatus: botSlotsData.status
         });
     } catch (e) {
         console.error('Error rendering dashboard:', e);
         res.status(500).send('Internal Server Error');
+    }
+});
+
+// Slot Management Routes
+app.get('/user/admin/slots', requireAdmin, async (req, res) => {
+    try {
+        const slotsData = await prismaDb.getBotSlotsStatus();
+        res.json({ success: true, data: slotsData });
+    } catch (error) {
+        console.error('Error getting bot slots:', error);
+        res.status(500).json({ success: false, message: 'Gagal mengambil data slot bot.' });
+    }
+});
+
+app.post('/user/admin/slots', requireAdmin, async (req, res) => {
+    try {
+        const { slots } = req.body;
+        if (!slots || typeof slots !== 'object') {
+            return res.status(400).json({ success: false, message: 'Format data slot tidak valid.' });
+        }
+        
+        const currentConfig = await prismaDb.getBotSlotsConfig();
+        const sanitized = { ...currentConfig };
+        
+        for (const key of ['store', 'v3', 'cc']) {
+            if (slots[key]) {
+                sanitized[key] = {
+                    status: slots[key].status === 'closed' ? 'closed' : 'open',
+                    maxSlots: Math.max(0, parseInt(slots[key].maxSlots) || 0),
+                    usedSlots: Math.max(0, parseInt(slots[key].usedSlots) || 0),
+                    mode: slots[key].mode === 'manual' ? 'manual' : 'auto'
+                };
+            }
+        }
+        
+        await prismaDb.setBotSlotsConfig(sanitized);
+        const updated = await prismaDb.getBotSlotsStatus();
+        res.json({ success: true, message: 'Pengaturan slot bot berhasil disimpan!', data: updated });
+    } catch (error) {
+        console.error('Error saving bot slots:', error);
+        res.status(500).json({ success: false, message: 'Terjadi kesalahan server saat menyimpan slot.' });
+    }
+});
+
+app.post('/user/admin/slots/toggle', requireAdmin, async (req, res) => {
+    try {
+        const { botId } = req.body;
+        const validBots = ['store', 'v3', 'cc'];
+        if (!validBots.includes(botId)) {
+            return res.status(400).json({ success: false, message: 'Jenis bot tidak valid.' });
+        }
+        
+        const currentConfig = await prismaDb.getBotSlotsConfig();
+        const defaultSlot = botId === 'store' ? 20 : (botId === 'v3' ? 15 : 10);
+        const currentBotConfig = currentConfig[botId] || { status: 'open', maxSlots: defaultSlot, usedSlots: 0, mode: 'auto' };
+        
+        // Toggle status
+        currentBotConfig.status = currentBotConfig.status === 'open' ? 'closed' : 'open';
+        currentConfig[botId] = currentBotConfig;
+        
+        await prismaDb.setBotSlotsConfig(currentConfig);
+        const updated = await prismaDb.getBotSlotsStatus();
+        const botLabel = botId === 'store' ? 'Bot Store' : (botId === 'cc' ? 'Bot CC' : 'Bot Guild');
+        res.json({ 
+            success: true, 
+            newStatus: currentBotConfig.status, 
+            message: `Status ${botLabel} berhasil diubah menjadi ${currentBotConfig.status === 'open' ? 'BUKA (READY)' : 'TUTUP (FULL SLOT)'}!`, 
+            data: updated 
+        });
+    } catch (error) {
+        console.error('Error toggling bot slot:', error);
+        res.status(500).json({ success: false, message: 'Gagal mengubah status bot.' });
     }
 });
 

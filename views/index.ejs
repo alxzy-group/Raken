@@ -450,6 +450,96 @@
         .bot-card-title { font-size: 18px; font-weight: 700; position: relative; z-index: 1; }
         .bot-card-desc  { font-size: 13px; color: var(--text-muted); line-height: 1.5; position: relative; z-index: 1; }
 
+        /* ─── Bot Status & Slot Lamp Indicator ─── */
+        .bot-card.is-disabled {
+            cursor: not-allowed !important;
+            border-color: rgba(239, 68, 68, 0.28) !important;
+            opacity: 0.72;
+        }
+        .bot-card.is-disabled:hover {
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .bot-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: all .3s ease;
+            position: relative;
+            z-index: 2;
+        }
+        .bot-status-pill.pill-ready {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34D399;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.18);
+        }
+        .bot-status-pill.pill-full {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #F87171;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.18);
+        }
+        .status-lamp {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+        }
+        .status-lamp.lamp-ready {
+            background-color: #10B981;
+            box-shadow: 0 0 8px #10B981;
+            animation: blink-lamp-green 1.4s infinite ease-in-out;
+        }
+        @keyframes blink-lamp-green {
+            0% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8), 0 0 6px #10B981;
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.15);
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0), 0 0 14px #10B981;
+                opacity: 0.85;
+            }
+            100% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 0 6px #10B981;
+                opacity: 1;
+            }
+        }
+        .status-lamp.lamp-full {
+            background-color: #EF4444;
+            box-shadow: 0 0 8px #EF4444;
+            animation: blink-lamp-red 2s infinite ease-in-out;
+        }
+        @keyframes blink-lamp-red {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 6px #EF4444;
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 12px #EF4444;
+                opacity: 0.6;
+            }
+        }
+        .bot-card-slots-info {
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
         /* ─── Package cards ─── */
         .pkg-grid {
             display: grid;
@@ -804,6 +894,29 @@
                 isValidatingVoucher: false,
                 voucherMessage: '',
 
+                botStatus: <%- JSON.stringify(typeof botStatus !== 'undefined' ? botStatus : {}) %>,
+
+                isBotReady(botId) {
+                    const key = botId === 'guild' ? 'v3' : botId;
+                    if (!this.botStatus || !this.botStatus[key]) return true;
+                    return this.botStatus[key].isReady;
+                },
+
+                getBotBadgeText(botId) {
+                    const key = botId === 'guild' ? 'v3' : botId;
+                    if (!this.botStatus || !this.botStatus[key]) return 'Ready';
+                    return this.botStatus[key].badgeText || (this.isBotReady(key) ? 'Ready' : 'Full Slot');
+                },
+
+                getBotSlotsInfo(botId) {
+                    const key = botId === 'guild' ? 'v3' : botId;
+                    if (!this.botStatus || !this.botStatus[key]) return '';
+                    const b = this.botStatus[key];
+                    if (b.status === 'closed') return 'Ditutup Sementara';
+                    if (!b.isReady) return 'Slot Penuh (0/' + b.maxSlots + ')';
+                    return 'Tersisa ' + b.remainingSlots + ' dari ' + b.maxSlots + ' slot';
+                },
+
                 get finalPrice() {
                     let basePrice = 0;
                     if (this.pricing && this.pricing[this.selectedBot] && this.pricing[this.selectedBot][this.selectedPackage]) {
@@ -843,6 +956,12 @@
 
                 init() {
                     this.initTheme();
+                    if (!this.isBotReady(this.selectedBot)) {
+                        const availableBots = ['store', 'v3', 'cc'].filter(id => this.isBotReady(id));
+                        if (availableBots.length > 0) {
+                            this.selectedBot = availableBots[0];
+                        }
+                    }
                     if (this.pricing && this.pricing[this.selectedBot]) {
                         const pkgs = Object.keys(this.pricing[this.selectedBot]);
                         if (pkgs.length > 0 && !this.pricing[this.selectedBot][this.selectedPackage]) {
@@ -873,6 +992,11 @@
                 },
 
                 selectBot(botId) {
+                    if (!this.isBotReady(botId)) {
+                        const botName = botId === 'store' ? 'Bot Store' : (botId === 'cc' ? 'Bot CC' : 'Bot Guild');
+                        alert(`Mohon maaf, slot untuk ${botName} saat ini sedang penuh atau ditutup sementara karena kendala operasional.`);
+                        return;
+                    }
                     if (this.selectedBot !== botId) this.resetVoucher();
                     this.selectedBot = botId;
                     const pkgs = Object.keys(this.pricing[botId] || {});
@@ -906,6 +1030,11 @@
                 },
 
                 async submitForm(e) {
+                    if (!this.isBotReady(this.selectedBot)) {
+                        const botName = this.selectedBot === 'store' ? 'Bot Store' : (this.selectedBot === 'cc' ? 'Bot CC' : 'Bot Guild');
+                        this.formError = `Slot untuk ${botName} saat ini sedang penuh atau ditutup sementara. Silakan pilih jenis bot lainnya.`;
+                        return;
+                    }
                     this.isLoading = true;
                     this.formError = '';
                     const formData = new FormData(e.target);
@@ -1131,10 +1260,20 @@
                     {id: 'v3', name: 'Bot Guild', desc: 'Bikin grup makin seru. Dilengkapi sistem level dan absensi.', icon: 'fas fa-users', color: 'rgba(139,92,246,.1)', colorTxt: '#8B5CF6'},
                     {id: 'cc', name: 'Bot CC', desc: 'Performa ekstra untuk grup ramai. Respons jauh lebih cepat dan stabil.', icon: 'fas fa-bolt', color: 'rgba(245,158,11,.1)', colorTxt: 'var(--warning)'}
                 ]" :key="index">
-                    <div class="bot-card" :class="selectedBot === bot.id ? 'active' : ''" @click="selectBot(bot.id)">
+                    <div class="bot-card" :class="{'active': selectedBot === bot.id, 'is-disabled': !isBotReady(bot.id)}" @click="selectBot(bot.id)">
                         <div class="shimmer"></div>
-                        <div class="bot-card-icon" :style="'background:' + bot.color + ';color:' + bot.colorTxt"><i :class="bot.icon"></i></div>
-                        <div class="bot-card-title" x-text="bot.name"></div>
+                        <div style="display:flex; align-items:center; justify-content:space-between; position:relative; z-index:2;">
+                            <div class="bot-card-icon" :style="'background:' + bot.color + ';color:' + bot.colorTxt"><i :class="bot.icon"></i></div>
+                            <!-- Live LED Lamp & Status Badge (Ready / Full Slot) -->
+                            <div class="bot-status-pill" :class="isBotReady(bot.id) ? 'pill-ready' : 'pill-full'">
+                                <span class="status-lamp" :class="isBotReady(bot.id) ? 'lamp-ready' : 'lamp-full'"></span>
+                                <span class="status-label" x-text="getBotBadgeText(bot.id)"></span>
+                            </div>
+                        </div>
+                        <div style="position:relative; z-index:1;">
+                            <div class="bot-card-title" x-text="bot.name"></div>
+                            <div class="bot-card-slots-info" x-text="getBotSlotsInfo(bot.id)"></div>
+                        </div>
                         <div class="bot-card-desc" x-text="bot.desc"></div>
                     </div>
                 </template>
@@ -1231,12 +1370,19 @@
                                 </div>
                             </div>
 
+                            <!-- Slot warning if bot is full/closed -->
+                            <div x-show="!isBotReady(selectedBot)" style="padding:12px 16px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:12px;font-size:13px;color:#F87171;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+                                <i class="fas fa-exclamation-triangle" style="font-size:16px;flex-shrink:0;"></i>
+                                <span>Slot untuk bot ini sedang penuh atau ditutup sementara. Silakan pilih jenis bot lainnya.</span>
+                            </div>
+
                             <!-- Error -->
                             <p x-show="formError" style="padding:12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;font-size:13px;color:var(--danger);margin-bottom:16px;" x-text="formError"></p>
 
                             <!-- Submit -->
-                            <button type="submit" :disabled="isLoading" class="btn-glow" style="width:100%;justify-content:center;border-radius:14px;padding:16px;font-size:16px;">
-                                <span x-show="!isLoading">Lanjutkan ke Pembayaran <i class="fas fa-arrow-right" style="margin-left:4px;"></i></span>
+                            <button type="submit" :disabled="isLoading || !isBotReady(selectedBot)" class="btn-glow" :style="!isBotReady(selectedBot) ? 'opacity:0.5;cursor:not-allowed;background:#ef4444!important;box-shadow:none!important;' : ''" style="width:100%;justify-content:center;border-radius:14px;padding:16px;font-size:16px;">
+                                <span x-show="!isLoading && !isBotReady(selectedBot)"><i class="fas fa-ban" style="margin-right:6px;"></i> Slot Bot Penuh / Tutup</span>
+                                <span x-show="!isLoading && isBotReady(selectedBot)">Lanjutkan ke Pembayaran <i class="fas fa-arrow-right" style="margin-left:4px;"></i></span>
                                 <span x-show="isLoading"><i class="fas fa-circle-notch fa-spin"></i> Memproses...</span>
                             </button>
                         </div>
